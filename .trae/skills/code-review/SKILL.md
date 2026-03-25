@@ -90,18 +90,45 @@ git diff --stat
 评价和后续建议
 ```
 
-### 4. 反馈给 development-assistance
+### 4. 问题处理流程
 
-将审查结果反馈给 `development-assistance`：
-- 严重问题：必须修复
-- 中等问题：建议修复
-- 轻微问题：可选优化
+#### 4.1 严重问题处理
+
+对于审查中发现的**严重问题**（如安全漏洞、逻辑错误导致游戏无法正常运行），由系统**自动修复**：
+- 直接在当前分支修改代码
+- 提交修复
+- 生成修复报告
+
+#### 4.2 非严重问题处理
+
+对于**非严重问题**（中等/轻微），将审查报告呈现给用户，由用户对代码进行全面检查：
+- 用户检查代码实现
+- 如发现其他不规范之处，记录需要修改的内容
+- 通过编辑 `development-assistance` skill 触发相应更改
+
+#### 4.3 用户检查流程
+
+用户检查完成后：
+1. 用户根据审查报告对代码进行全面检查
+2. 如需修改规范，编辑 `e:\project\trae-workflow\.trae\skills\development-assistance\SKILL.md`
+3. 如需修复代码，向 assistant 说明需要修复的内容
+4. 修复完成后，assistant 提交代码并重新触发审查
 
 ### 5. 更新任务状态
 
 更新 `e:\project\trae-workflow\.trae\rules\development-plan.md`：
-- 如有问题：状态更新为"审查迭代"
-- 如无问题：状态更新为"待文档"
+- 严重问题已自动修复：状态更新为"待用户检查"
+- 非严重问题：状态更新为"待用户检查"
+- 无问题：状态更新为"待文档"
+
+### 6. 总结与文档更新
+
+在用户完成所有代码检查并确认无需进一步修改后：
+1. 总结本次审查发现的通用问题模式
+2. 提炼代码规范与最佳实践
+3. 将通用规范写入 `e:\project\trae-workflow\.trae\rules\coding-rule.md`
+4. 将最佳实践写入 `e:\project\trae-workflow\docs\技术方案.md`
+5. 继续执行 documentation 任务
 
 ## 审查迭代
 
@@ -112,7 +139,7 @@ git diff --stat
 
 每轮审查后：
 - 如问题修复完成，状态更新为"待文档"
-- 如仍有问题，继续反馈给 `development-assistance`
+- 如仍有问题，继续反馈
 - 3轮后仍有严重问题，报告给用户决定
 
 ## 状态流转
@@ -121,6 +148,7 @@ git diff --stat
 |------|------|
 | 待审查 | 代码已生成，等待审查 |
 | 审查中 | 正在进行代码审查 |
+| 待用户检查 | 审查完成，等待用户检查代码 |
 | 审查迭代 | 审查发现问题，返回 development-assistance 优化 |
 | 待文档 | 审查通过，等待 documentation 更新文档 |
 
@@ -132,6 +160,7 @@ git diff --stat
 | 进行中的任务目录 | `e:\project\trae-workflow\plans` |
 | 术语表 | `e:\project\trae-workflow\docs\术语表.md` |
 | 编码规范 | `e:\project\trae-workflow\.trae\rules\coding-rule.md` |
+| 技术方案 | `e:\project\trae-workflow\docs\技术方案.md` |
 
 ## 注意事项
 
@@ -139,3 +168,4 @@ git diff --stat
 - 问题分级明确：严重/中等/轻微
 - 提供具体的修复建议
 - 尊重开发者的实现选择，对合理变体给予认可
+- 严重问题自动修复，非严重问题由用户检查决定

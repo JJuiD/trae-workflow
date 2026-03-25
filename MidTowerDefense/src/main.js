@@ -1,7 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-class game {
+class Game {
     constructor(canvas, ctx) {
         this.canvas = canvas;
         this.ctx = ctx;
@@ -16,23 +16,23 @@ class game {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    game_loop(current_time) {
+    gameLoop(current_time) {
         const delta_time = current_time - this.last_time;
         this.last_time = current_time;
 
         this.update(delta_time);
         this.render();
 
-        requestAnimationFrame((time) => this.game_loop(time));
+        requestAnimationFrame((time) => this.gameLoop(time));
     }
 
     start() {
         requestAnimationFrame((time) => {
             this.last_time = time;
-            this.game_loop(time);
+            this.gameLoop(time);
         });
     }
 }
 
-const game_instance = new game(canvas, ctx);
+const game_instance = new Game(canvas, ctx);
 game_instance.start();
