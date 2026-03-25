@@ -26,10 +26,11 @@ description: "Reviews code quality and provides feedback. Invoke when user asks 
 
 ### 1. 获取当前分支代码
 
-获取当前Git分支的最新代码变更：
+获取当前Git分支与主干的全部代码差异：
 ```bash
-git diff --name-only
-git diff --stat
+git log --oneline main..HEAD
+git diff --name-only main..HEAD
+git diff --stat main..HEAD
 ```
 
 ### 2. 代码审查
