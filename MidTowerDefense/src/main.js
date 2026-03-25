@@ -25,6 +25,8 @@ class Game {
         this.spawnTimer = 0;
         this.spawnInterval = 0.5;
         this.enemiesPerSpawn = 3;
+
+        this.spawnTower(12, 12);
     }
 
     update(deltaTime) {
