@@ -22,10 +22,6 @@ class Game {
         this.mapRenderer = new MapRenderer(ctx, TILE_SIZE);
         this.entityManager = new EntityManager();
         this.occupiedDirections = [];
-
-        this.testTower = new Tower(400, 300);
-        this.entityManager.addEntity(this.testTower);
-
         this.spawnTimer = 0;
         this.spawnInterval = 0.5;
         this.enemiesPerSpawn = 3;
@@ -34,7 +30,6 @@ class Game {
     update(deltaTime) {
         this.crystal.update(deltaTime);
         this.entityManager.update(deltaTime / 1000, this.crystal);
-        this.testTower.update(deltaTime / 1000, this.entityManager.enemies);
 
         this.spawnTimer += deltaTime / 1000;
         if (this.spawnTimer >= this.spawnInterval) {
