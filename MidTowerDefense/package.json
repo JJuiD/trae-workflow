@@ -1,0 +1,13 @@
+{
+  "name": "midtowerdefense",
+  "version": "0.1.0",
+  "description": "中间塔防 - 局域网多人合作塔防游戏",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'No build step required for pure HTML5/JS game'"
+  },
+  "keywords": ["game", "tower-defense", "multiplayer"],
+  "author": "",
+  "license": "MIT"
+}
