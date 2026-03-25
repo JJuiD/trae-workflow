@@ -1,4 +1,4 @@
-import { Map, TILE_SIZE, DEFAULT_MAP_SIZE, DIRECTION, getPlayerWorldPosition, isDirectionOccupied, getAvailableDirections } from './game/map.js';
+import { Map, TILE_SIZE, DEFAULT_MAP_SIZE, isDirectionOccupied, getAvailableDirections } from './game/map.js';
 import { Crystal } from './game/crystal.js';
 import { MapRenderer } from './renderer/map_renderer.js';
 

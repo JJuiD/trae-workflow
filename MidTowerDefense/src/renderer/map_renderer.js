@@ -1,3 +1,5 @@
+import { PLAYER_GRID_POSITIONS } from './game/player_position.js';
+
 const GRID_COLOR = '#1a1a2e';
 const GRID_LINE_WIDTH = 1;
 
@@ -20,21 +22,19 @@ class MapRenderer {
     renderGrid(map) {
         const { ctx, tileSize } = this;
         const mapSize = map.size;
-        const offsetX = 0;
-        const offsetY = 0;
 
         ctx.strokeStyle = GRID_COLOR;
         ctx.lineWidth = GRID_LINE_WIDTH;
 
         for (let i = 0; i <= mapSize; i++) {
             ctx.beginPath();
-            ctx.moveTo(offsetX + i * tileSize, offsetY);
-            ctx.lineTo(offsetX + i * tileSize, offsetY + mapSize * tileSize);
+            ctx.moveTo(i * tileSize, 0);
+            ctx.lineTo(i * tileSize, mapSize * tileSize);
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(offsetX, offsetY + i * tileSize);
-            ctx.lineTo(offsetX + mapSize * tileSize, offsetY + i * tileSize);
+            ctx.moveTo(0, i * tileSize);
+            ctx.lineTo(mapSize * tileSize, i * tileSize);
             ctx.stroke();
         }
     }
@@ -62,7 +62,7 @@ class MapRenderer {
         const directions = ['top', 'bottom', 'left', 'right'];
 
         for (const direction of directions) {
-            const pos = this.getPositionCenter(map, direction);
+            const pos = this.getPositionCenter(direction);
             const isOccupied = occupiedDirections.includes(direction);
             const color = PLAYER_POSITION_COLORS[direction];
             const alpha = isOccupied ? OCCUPIED_ALPHA : AVAILABLE_ALPHA;
@@ -88,14 +88,8 @@ class MapRenderer {
         }
     }
 
-    getPositionCenter(map, direction) {
-        const positions = {
-            top: { gridX: 12, gridY: 11 },
-            bottom: { gridX: 12, gridY: 13 },
-            left: { gridX: 11, gridY: 12 },
-            right: { gridX: 13, gridY: 12 }
-        };
-        const pos = positions[direction];
+    getPositionCenter(direction) {
+        const pos = PLAYER_GRID_POSITIONS[direction];
         return {
             x: pos.gridX * this.tileSize + this.tileSize / 2,
             y: pos.gridY * this.tileSize + this.tileSize / 2

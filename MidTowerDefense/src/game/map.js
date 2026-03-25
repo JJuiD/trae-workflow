@@ -1,3 +1,5 @@
+import { ALL_DIRECTIONS, getPlayerGridPosition } from './player_position.js';
+
 const TILE_SIZE = 32;
 const DEFAULT_MAP_SIZE = 25;
 
@@ -68,38 +70,14 @@ class Map {
     }
 }
 
-const DIRECTION = {
-    TOP: 'top',
-    BOTTOM: 'bottom',
-    LEFT: 'left',
-    RIGHT: 'right'
-};
-
-const PLAYER_POSITIONS = {
-    top: { gridX: 12, gridY: 11 },
-    bottom: { gridX: 12, gridY: 13 },
-    left: { gridX: 11, gridY: 12 },
-    right: { gridX: 13, gridY: 12 }
-};
-
-function getPlayerWorldPosition(direction) {
-    const pos = PLAYER_POSITIONS[direction];
-    const centerX = Math.floor(DEFAULT_MAP_SIZE / 2);
-    const centerY = Math.floor(DEFAULT_MAP_SIZE / 2);
-    return {
-        x: (pos.gridX - centerX) * TILE_SIZE + TILE_SIZE / 2,
-        y: (pos.gridY - centerY) * TILE_SIZE + TILE_SIZE / 2
-    };
-}
-
 function isDirectionOccupied(direction, occupiedDirections) {
     return occupiedDirections.includes(direction);
 }
 
 function getAvailableDirections(occupiedDirections) {
-    return Object.keys(DIRECTION).filter(
+    return ALL_DIRECTIONS.filter(
         dir => !isDirectionOccupied(dir, occupiedDirections)
     );
 }
 
-export { Map, Position, TileType, TILE_SIZE, DEFAULT_MAP_SIZE, DIRECTION, PLAYER_POSITIONS, getPlayerWorldPosition, isDirectionOccupied, getAvailableDirections };
+export { Map, Position, TileType, TILE_SIZE, DEFAULT_MAP_SIZE, isDirectionOccupied, getAvailableDirections };
