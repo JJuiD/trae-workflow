@@ -91,30 +91,45 @@ function showPositionSelection() {
         const centerPos = tempMap.getCenterWorld();
         tempRenderer.renderMap(tempMap, { x: centerPos.x, y: centerPos.y, getColor: () => '#00fff5', isAlive: () => true }, []);
 
-        if (hoverGridX >= 0 && hoverGridY >= 0) {
-            const worldX = hoverGridX * TILE_SIZE + TILE_SIZE / 2;
-            const worldY = hoverGridY * TILE_SIZE + TILE_SIZE / 2;
+        const validPositions = [
+            { gridX: 12, gridY: 11 },
+            { gridX: 12, gridY: 13 },
+            { gridX: 11, gridY: 12 },
+            { gridX: 13, gridY: 12 }
+        ];
 
+        validPositions.forEach(pos => {
+            const worldX = pos.gridX * TILE_SIZE + TILE_SIZE / 2;
+            const worldY = pos.gridY * TILE_SIZE + TILE_SIZE / 2;
+            const canPlaceHere = tempMap.canPlaceTower(pos.gridX, pos.gridY);
+
+            ctx.fillStyle = canPlaceHere ? 'rgba(74, 222, 128, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+            ctx.fillRect(pos.gridX * TILE_SIZE, pos.gridY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+            ctx.strokeStyle = canPlaceHere ? '#4ade80' : '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(pos.gridX * TILE_SIZE, pos.gridY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        });
+
+        if (hoverGridX >= 0 && hoverGridY >= 0) {
             canPlace = tempMap.canPlaceTower(hoverGridX, hoverGridY);
 
-            ctx.fillStyle = canPlace ? 'rgba(74, 222, 128, 0.5)' : 'rgba(239, 68, 68, 0.5)';
-            ctx.fillRect(hoverGridX * TILE_SIZE, hoverGridY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            if (canPlace) {
+                const worldX = hoverGridX * TILE_SIZE + TILE_SIZE / 2;
+                const worldY = hoverGridY * TILE_SIZE + TILE_SIZE / 2;
 
-            ctx.strokeStyle = canPlace ? '#4ade80' : '#ef4444';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(hoverGridX * TILE_SIZE, hoverGridY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                const towerType = getTowerType(selectedTowerType);
+                if (towerType) {
+                    ctx.fillStyle = towerType.color || '#fbbf24';
+                    ctx.globalAlpha = 0.7;
+                    ctx.fillRect(worldX - 15, worldY - 15, 30, 30);
+                    ctx.globalAlpha = 1.0;
 
-            const towerType = getTowerType(selectedTowerType);
-            if (towerType) {
-                ctx.fillStyle = towerType.color || '#fbbf24';
-                ctx.globalAlpha = 0.7;
-                ctx.fillRect(worldX - 15, worldY - 15, 30, 30);
-                ctx.globalAlpha = 1.0;
-
-                ctx.strokeStyle = 'rgba(74, 144, 217, 0.3)';
-                ctx.beginPath();
-                ctx.arc(worldX, worldY, towerType.attackRange, 0, Math.PI * 2);
-                ctx.stroke();
+                    ctx.strokeStyle = 'rgba(74, 144, 217, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(worldX, worldY, towerType.attackRange, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
             }
         }
 

@@ -58,6 +58,16 @@ class Map {
         if (gridX === this.centerX && gridY === this.centerY) {
             return false;
         }
+        const validPositions = [
+            { gridX: 12, gridY: 11 },
+            { gridX: 12, gridY: 13 },
+            { gridX: 11, gridY: 12 },
+            { gridX: 13, gridY: 12 }
+        ];
+        const isValidPosition = validPositions.some(pos => pos.gridX === gridX && pos.gridY === gridY);
+        if (!isValidPosition) {
+            return false;
+        }
         return this.tiles[gridY][gridX] === TileType.EMPTY;
     }
 
