@@ -2,7 +2,7 @@
 
 ## 工作流调用
 
-用户说"创建需求"时触发工作流：**新需求**直接由 `development-workflow` 创建分支；**迭代需求**则先由 `requirement-iteration` 分析现有功能，再由 `development-workflow` 创建分支；随后 `requirement-discussion` 明确需求后进入开发阶段，由 `development-assistance` 提供代码生成和问题排查支持，`code-review` 进行最多3轮迭代审查，最后 `documentation` 更新文档。
+用户说"创建需求"时触发工作流：**新需求**直接由 `development-workflow` 创建分支；**迭代需求**则先由 `requirement-iteration` 分析现有功能，再由 `development-workflow` 创建分支；随后 `requirement-discussion` 明确需求后进入开发阶段，由 `development-assistance` 提供代码生成和问题排查支持，`code-review` 进行最多3轮迭代审查，`documentation` 更新文档后自动提交 Merge Request 到 master 分支。
 
 ## 目录结构
 
@@ -16,13 +16,6 @@ MidTowerDefense/
 ```
 
 ## 模块规范
-
-### 命名约定
-- **目录名称**：小写字母 + 下划线（例如 `game_entity`）
-- **文件名称**：小写字母 + 下划线（例如 `tower_attack.py`）
-- **类名称**：PascalCase 大驼峰命名（例如 `TowerBase`）
-- **函数名称**：小写字母 + 下划线（例如 `calculate_damage`）
-- **变量名称**：小写字母 + 下划线（例如 `tower_level`）
 
 ### 模块职责
 - `src/game/` - 核心游戏逻辑（实体、系统、地图）
