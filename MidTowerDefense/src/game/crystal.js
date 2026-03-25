@@ -1,5 +1,5 @@
 const CRYSTAL_COLOR = '#00fff5';
-const CRYSTAL_SIZE = 40;
+const CRYSTAL_SIZE = 20;
 
 class Crystal {
     constructor(x, y) {
@@ -8,6 +8,7 @@ class Crystal {
         this.maxHealth = 1000;
         this.health = this.maxHealth;
         this.size = CRYSTAL_SIZE;
+        this.collisionRadius = CRYSTAL_SIZE / 2;
         this.hitFlashTime = 0;
     }
 
