@@ -1,0 +1,42 @@
+const CRYSTAL_COLOR = '#00fff5';
+const CRYSTAL_SIZE = 40;
+
+class Crystal {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.maxHealth = 1000;
+        this.health = this.maxHealth;
+        this.size = CRYSTAL_SIZE;
+        this.hitFlashTime = 0;
+    }
+
+    takeDamage(amount) {
+        this.health = Math.max(0, this.health - amount);
+        this.hitFlashTime = 200;
+    }
+
+    update(deltaTime) {
+        if (this.hitFlashTime > 0) {
+            this.hitFlashTime -= deltaTime;
+        }
+    }
+
+    getColor() {
+        if (this.hitFlashTime > 0) {
+            return '#ff0000';
+        }
+        return CRYSTAL_COLOR;
+    }
+
+    isAlive() {
+        return this.health > 0;
+    }
+
+    reset() {
+        this.health = this.maxHealth;
+        this.hitFlashTime = 0;
+    }
+}
+
+export { Crystal, CRYSTAL_COLOR, CRYSTAL_SIZE };
