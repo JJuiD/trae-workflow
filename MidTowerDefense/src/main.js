@@ -131,14 +131,8 @@ class Game {
         }
 
         const enemy = new Enemy(x, y);
-        const availableDirs = this.getAvailableSpawnDirections();
-        
-        if (availableDirs.length > 0) {
-            const dir = availableDirs[Math.floor(Math.random() * availableDirs.length)];
-            enemy.setDirection(dir);
-            enemy.moveSpeed = 30 + Math.random() * 20;
-            this.entityManager.addEntity(enemy);
-        }
+        enemy.speed = 30 + Math.random() * 20;
+        this.entityManager.addEntity(enemy);
     }
 
     getAvailableSpawnDirections() {
