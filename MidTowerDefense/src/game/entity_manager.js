@@ -1,0 +1,72 @@
+class EntityManager {
+    constructor() {
+        this.entities = [];
+        this.towers = [];
+        this.enemies = [];
+    }
+
+    addEntity(entity) {
+        this.entities.push(entity);
+
+        if (entity.type === 'tower') {
+            this.towers.push(entity);
+        } else if (entity.type === 'enemy') {
+            this.enemies.push(entity);
+        }
+    }
+
+    removeEntity(entityId) {
+        const index = this.entities.findIndex(e => e.id === entityId);
+        if (index !== -1) {
+            const entity = this.entities[index];
+            this.entities.splice(index, 1);
+
+            if (entity.type === 'tower') {
+                const towerIndex = this.towers.findIndex(t => t.id === entityId);
+                if (towerIndex !== -1) this.towers.splice(towerIndex, 1);
+            } else if (entity.type === 'enemy') {
+                const enemyIndex = this.enemies.findIndex(e => e.id === entityId);
+                if (enemyIndex !== -1) this.enemies.splice(enemyIndex, 1);
+            }
+        }
+    }
+
+    getEntitiesByType(type) {
+        return this.entities.filter(e => e.type === type);
+    }
+
+    update(deltaTime, crystal) {
+        for (const entity of this.entities) {
+            if (entity.type === 'tower') {
+                entity.update(deltaTime, this.enemies);
+            } else if (entity.type === 'enemy') {
+                entity.update(deltaTime, this.towers, crystal);
+            } else {
+                entity.update(deltaTime);
+            }
+        }
+
+        this.cleanup();
+    }
+
+    cleanup() {
+        const deadEntities = this.entities.filter(e => !e.isAlive);
+        for (const entity of deadEntities) {
+            this.removeEntity(entity.id);
+        }
+    }
+
+    render(ctx) {
+        for (const entity of this.entities) {
+            entity.render(ctx);
+        }
+    }
+
+    clear() {
+        this.entities = [];
+        this.towers = [];
+        this.enemies = [];
+    }
+}
+
+export { EntityManager };
