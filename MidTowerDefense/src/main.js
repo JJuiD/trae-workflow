@@ -86,6 +86,8 @@ function showPositionSelection() {
     let hoverGridX = -1;
     let hoverGridY = -1;
     let canPlace = false;
+    let selectedGridX = -1;
+    let selectedGridY = -1;
 
     function renderPreview() {
         ctx.fillStyle = '#16213e';
@@ -106,33 +108,38 @@ function showPositionSelection() {
             const worldY = pos.gridY * TILE_SIZE + TILE_SIZE / 2;
             const canPlaceHere = tempMap.canPlaceTower(pos.gridX, pos.gridY);
 
-            ctx.fillStyle = canPlaceHere ? 'rgba(74, 222, 128, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+            const isSelected = pos.gridX === selectedGridX && pos.gridY === selectedGridY;
+            const isHovered = pos.gridX === hoverGridX && pos.gridY === hoverGridY;
+
+            if (isSelected) {
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.6)';
+            } else if (isHovered && canPlaceHere) {
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.3)';
+            } else {
+                ctx.fillStyle = canPlaceHere ? 'rgba(74, 222, 128, 0.15)' : 'rgba(239, 68, 68, 0.3)';
+            }
             ctx.fillRect(pos.gridX * TILE_SIZE, pos.gridY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 
-            ctx.strokeStyle = canPlaceHere ? '#4ade80' : '#ef4444';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = isSelected ? '#22c55e' : (canPlaceHere ? '#4ade80' : '#ef4444');
+            ctx.lineWidth = isSelected ? 3 : 2;
             ctx.strokeRect(pos.gridX * TILE_SIZE, pos.gridY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         });
 
-        if (hoverGridX >= 0 && hoverGridY >= 0) {
-            canPlace = tempMap.canPlaceTower(hoverGridX, hoverGridY);
+        if (selectedGridX >= 0 && selectedGridY >= 0) {
+            const worldX = selectedGridX * TILE_SIZE + TILE_SIZE / 2;
+            const worldY = selectedGridY * TILE_SIZE + TILE_SIZE / 2;
 
-            if (canPlace) {
-                const worldX = hoverGridX * TILE_SIZE + TILE_SIZE / 2;
-                const worldY = hoverGridY * TILE_SIZE + TILE_SIZE / 2;
+            const towerType = getTowerType(selectedTowerType);
+            if (towerType) {
+                ctx.fillStyle = towerType.color || '#fbbf24';
+                ctx.globalAlpha = 0.8;
+                ctx.fillRect(worldX - 15, worldY - 15, 30, 30);
+                ctx.globalAlpha = 1.0;
 
-                const towerType = getTowerType(selectedTowerType);
-                if (towerType) {
-                    ctx.fillStyle = towerType.color || '#fbbf24';
-                    ctx.globalAlpha = 0.7;
-                    ctx.fillRect(worldX - 15, worldY - 15, 30, 30);
-                    ctx.globalAlpha = 1.0;
-
-                    ctx.strokeStyle = 'rgba(74, 144, 217, 0.3)';
-                    ctx.beginPath();
-                    ctx.arc(worldX, worldY, towerType.attackRange, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
+                ctx.strokeStyle = 'rgba(74, 144, 217, 0.3)';
+                ctx.beginPath();
+                ctx.arc(worldX, worldY, towerType.attackRange, 0, Math.PI * 2);
+                ctx.stroke();
             }
         }
 
@@ -148,18 +155,13 @@ function showPositionSelection() {
 
         hoverGridX = Math.floor(mouseX / TILE_SIZE);
         hoverGridY = Math.floor(mouseY / TILE_SIZE);
+        canPlace = tempMap.canPlaceTower(hoverGridX, hoverGridY);
     }
 
     function handleClick(e) {
         if (hoverGridX >= 0 && hoverGridY >= 0 && canPlace) {
-            const worldX = hoverGridX * TILE_SIZE + TILE_SIZE / 2;
-            const worldY = hoverGridY * TILE_SIZE + TILE_SIZE / 2;
-
-            tempMap.setTile(hoverGridX, hoverGridY, 1);
-
-            canvas.removeEventListener('mousemove', handleMouseMove);
-            canvas.removeEventListener('click', handleClick);
-
+            selectedGridX = hoverGridX;
+            selectedGridY = hoverGridY;
             confirmBtn.disabled = false;
         }
     }
@@ -168,8 +170,11 @@ function showPositionSelection() {
     canvas.addEventListener('click', handleClick);
 
     confirmBtn.addEventListener('click', () => {
-        positionDiv.classList.add('hidden');
-        startGame(selectedTowerType, hoverGridX, hoverGridY);
+        if (selectedGridX >= 0 && selectedGridY >= 0) {
+            tempMap.setTile(selectedGridX, selectedGridY, 1);
+            positionDiv.classList.add('hidden');
+            startGame(selectedTowerType, selectedGridX, selectedGridY);
+        }
     });
 
     positionDiv.classList.remove('hidden');
