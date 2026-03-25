@@ -1,5 +1,9 @@
 # 中间塔防 - 项目结构规范
 
+## 工作流调用
+
+用户说"创建需求"时触发工作流：**新需求**直接由 `development-workflow` 创建分支；**迭代需求**则先由 `requirement-iteration` 分析现有功能，再由 `development-workflow` 创建分支；随后 `requirement-discussion` 明确需求后进入开发阶段，由 `development-assistance` 提供代码生成和问题排查支持，`code-review` 进行最多3轮迭代审查，最后 `documentation` 更新文档。
+
 ## 目录结构
 
 ```
