@@ -17,6 +17,12 @@ class Tower extends Entity {
         this.attackFlashTimer = 0;
     }
 
+    applySkill(game) {
+        if (game && game.skillManager) {
+            game.skillManager.applyAllSkills(game, this);
+        }
+    }
+
     update(deltaTime, enemies) {
         super.update(deltaTime);
 

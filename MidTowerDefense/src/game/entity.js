@@ -29,6 +29,43 @@ class Entity {
         this.isAlive = true;
         this.isTakingDamage = false;
         this.damageFlashTimer = 0;
+
+        this.eventListeners = {};
+        this.skillTimers = {};
+        this.skillHandlers = {};
+        this.shield = 0;
+        this.lastShieldTime = 0;
+        this.lastHealTime = 0;
+        this.rageActive = false;
+        this.attackRange = 0;
+    }
+
+    on(event, handler) {
+        if (!this.eventListeners[event]) {
+            this.eventListeners[event] = [];
+        }
+        this.eventListeners[event].push(handler);
+    }
+
+    off(event, handler) {
+        if (!this.eventListeners[event]) return;
+        const index = this.eventListeners[event].indexOf(handler);
+        if (index > -1) {
+            this.eventListeners[event].splice(index, 1);
+        }
+    }
+
+    emit(event, data) {
+        if (!this.eventListeners[event]) return;
+        this.eventListeners[event].forEach(handler => handler(data));
+    }
+
+    addShield(value) {
+        this.shield += value;
+    }
+
+    heal(value) {
+        this.hp = Math.min(this.hp + value, this.maxHp);
     }
 
     update(deltaTime) {
@@ -56,6 +93,8 @@ class Entity {
 
         this.isTakingDamage = true;
         this.damageFlashTimer = 0.2;
+
+        this.emit('damaged', { damage: actualDamage, originalDamage: amount });
 
         if (this.hp <= 0) {
             this.hp = 0;

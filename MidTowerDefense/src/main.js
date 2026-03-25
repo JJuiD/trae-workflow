@@ -4,6 +4,8 @@ import { MapRenderer } from './renderer/map_renderer.js';
 import { Tower } from './game/tower.js';
 import { Enemy } from './game/enemy.js';
 import { EntityManager } from './game/entity_manager.js';
+import { SkillManager } from './game/skill_manager.js';
+import { ProjectileManager } from './game/projectile.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -25,6 +27,9 @@ class Game {
         this.spawnTimer = 0;
         this.spawnInterval = 0.5;
         this.enemiesPerSpawn = 3;
+        this.skillManager = new SkillManager();
+        this.skillManager.initWithRandomSkills();
+        this.projectiles = new ProjectileManager();
 
         this.spawnTower(12, 12);
     }
@@ -32,6 +37,7 @@ class Game {
     update(deltaTime) {
         this.crystal.update(deltaTime);
         this.entityManager.update(deltaTime / 1000, this.crystal);
+        this.projectiles.update(deltaTime / 1000, this.entityManager);
 
         this.spawnTimer += deltaTime / 1000;
         if (this.spawnTimer >= this.spawnInterval) {
@@ -58,10 +64,15 @@ class Game {
         this.entityManager.addEntity(enemy);
     }
 
-    spawnTower(gridX, gridY) {
+    spawnTower(gridX, gridY, applySkills = true) {
         const worldX = gridX * TILE_SIZE + TILE_SIZE / 2;
         const worldY = gridY * TILE_SIZE + TILE_SIZE / 2;
         const tower = new Tower(worldX, worldY);
+        
+        if (applySkills) {
+            tower.applySkill(this);
+        }
+        
         this.entityManager.addEntity(tower);
         return tower;
     }
@@ -72,6 +83,7 @@ class Game {
 
         this.mapRenderer.renderMap(this.map, this.crystal, this.occupiedDirections);
         this.entityManager.render(this.ctx);
+        this.projectiles.render(this.ctx);
     }
 
     gameLoop(currentTime) {
