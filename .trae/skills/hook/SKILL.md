@@ -1,6 +1,6 @@
 ---
 name: "hook"
-description: "Universal hook. Always active. Check conditions and trigger appropriate workflows after each conversation."
+description: "Always active."
 ---
 
 # Universal Hook
