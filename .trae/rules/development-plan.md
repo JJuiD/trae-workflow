@@ -4,21 +4,31 @@
 
 | 字段 | 值 |
 |------|-----|
-| 任务名称 | 第4周：被动技能系统基础 |
-| Git分支 | feature/week4_passive_skill |
-| 状态 | 已完成 |
+| 任务名称 | 第5周：初始塔选择 |
+| Git分支 | feature/week5_initial_tower |
+| 状态 | 策划中 |
 | 开始时间 | 2026-03-25 |
 
 ## 任务文档
 
-- `e:\project\trae-workflow\plans\2026-03-25_第4周_被动技能系统基础.md`
+- `e:\project\trae-workflow\plans\2026-03-25_第5周_初始塔选择.md`
 
 ## 状态历史
 
 | 时间 | 状态 | 备注 |
 |------|------|------|
-| 2026-03-25 | 策划中 | 第4周任务已创建 |
-| 2026-03-25 | 开发中 | 用户明确开始开发 |
+| 2026-03-25 | 策划中 | 第5周任务已创建 |
+
+## 第4周完成内容
+
+### 被动技能系统
+- [x] skill.js 技能基类和效果实现
+- [x] skill_pool.js 技能池配置
+- [x] skill_slot.js 技能槽位
+- [x] skill_manager.js 技能管理器
+- [x] projectile.js 投射物系统
+- [x] Entity 事件系统 (on/off/emit)
+- [x] EntityManager 敌人查询方法
 
 ## 第3周完成内容
 
