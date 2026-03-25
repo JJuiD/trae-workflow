@@ -10,6 +10,7 @@ class Enemy extends Entity {
         this.damageFlashTimer = 0;
         this.target = null;
         this.originalTarget = null;
+        this.collisionRadius = 8;
     }
 
     setTarget(target) {
@@ -94,12 +95,12 @@ class Enemy extends Entity {
             ctx.fillStyle = '#e74c3c';
         }
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 12, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
         ctx.fill();
 
         if (!this.isTakingDamage) {
             ctx.strokeStyle = '#c0392b';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1;
             ctx.stroke();
         }
 
@@ -115,7 +116,7 @@ class Enemy extends Entity {
         }
 
         if (this.hp < this.maxHp) {
-            const barWidth = 24;
+            const barWidth = 16;
             const barHeight = 4;
             const barX = this.x - barWidth / 2;
             const barY = this.y - 20;
