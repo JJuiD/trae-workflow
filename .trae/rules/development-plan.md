@@ -12,7 +12,7 @@
 
 ## 任务文档
 
-- `e:\project\trae-workflow\plans\2026-03-25_第1周_项目初始化.md`
+- `e:\project\trae-workflow\plans\2026-03-25_第2周_地图系统基础.md`
 
 ## 状态历史
 
