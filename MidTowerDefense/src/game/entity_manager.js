@@ -37,6 +37,37 @@ class EntityManager {
         return this.entities.filter(e => e.type === type);
     }
 
+    getNearestEnemy(x, y) {
+        let nearest = null;
+        let nearestDist = Infinity;
+        
+        for (const enemy of this.enemies) {
+            if (!enemy.isAlive) continue;
+            const dx = enemy.x - x;
+            const dy = enemy.y - y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                nearest = enemy;
+            }
+        }
+        return nearest;
+    }
+
+    getEnemiesInRange(x, y, range) {
+        return this.enemies.filter(enemy => {
+            if (!enemy.isAlive) return false;
+            const dx = enemy.x - x;
+            const dy = enemy.y - y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            return dist <= range;
+        });
+    }
+
+    getEntityById(id) {
+        return this.entities.find(e => e.id === id);
+    }
+
     update(deltaTime, crystal) {
         for (const entity of this.entities) {
             if (entity.type === 'tower') {
