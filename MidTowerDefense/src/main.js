@@ -133,6 +133,7 @@ function showPositionSelection() {
     }
 
     function handleClick(e) {
+        console.log('Click! hoverGridX:', hoverGridX, 'hoverGridY:', hoverGridY, 'canPlace:', canPlace);
         if (hoverGridX >= 0 && hoverGridY >= 0 && canPlace) {
             const worldX = hoverGridX * TILE_SIZE + TILE_SIZE / 2;
             const worldY = hoverGridY * TILE_SIZE + TILE_SIZE / 2;
