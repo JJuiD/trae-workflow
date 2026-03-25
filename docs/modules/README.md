@@ -4,8 +4,6 @@
 
 ## 模块列表
 
-- [工作流模块](./workflow/README.md) - 开发流程与Skill系统
-- [编码规范](./coding-standards/README.md) - 代码编写规范
 - [游戏框架](./game-framework/README.md) - 第1周项目初始化成果
 
 ---
