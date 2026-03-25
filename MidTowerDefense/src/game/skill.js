@@ -60,6 +60,39 @@ const TIMED_EFFECTS = {
 
         return intervalId;
     },
+    heal_aura: (game, entity, config) => {
+        const intervalId = setInterval(() => {
+            if (!entity.isAlive) {
+                clearInterval(intervalId);
+                return;
+            }
+            const towers = game.entityManager.towers || [];
+            towers.forEach(tower => {
+                if (!tower.isAlive) return;
+                const dx = tower.x - entity.x;
+                const dy = tower.y - entity.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist <= config.range) {
+                    tower.heal(config.healValue);
+                }
+            });
+            if (game.crystal && game.crystal.isAlive && game.crystal.isAlive()) {
+                const dx = game.crystal.x - entity.x;
+                const dy = game.crystal.y - entity.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist <= config.range) {
+                    game.crystal.heal(config.healValue);
+                }
+            }
+        }, config.interval * MS_PER_SECOND);
+
+        const cleanup = () => clearInterval(intervalId);
+        entity.on('death', cleanup);
+        entity.skillCleanup = entity.skillCleanup || [];
+        entity.skillCleanup.push(cleanup);
+
+        return intervalId;
+    },
 };
 
 const TRIGGER_EFFECTS = {
@@ -167,6 +200,27 @@ const SKILL_CONFIGS = {
         category: 'passive',
         level: 1,
         effect: { type: 'attack_speed', value: 0.15 }
+    },
+    'range_boost': {
+        id: 'range_boost',
+        name: '视野增强',
+        description: '提升攻击范围',
+        category: 'passive',
+        level: 1,
+        effect: { type: 'range_boost', value: 0.2 }
+    },
+    'heal_aura': {
+        id: 'heal_aura',
+        name: '治疗光环',
+        description: '周期性治疗范围内友军',
+        category: 'timed',
+        level: 1,
+        effect: {
+            type: 'heal_aura',
+            interval: 2,
+            healValue: 10,
+            range: 100
+        }
     },
     'fireball': {
         id: 'fireball',

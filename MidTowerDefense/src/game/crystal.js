@@ -17,6 +17,10 @@ class Crystal {
         this.hitFlashTime = 200;
     }
 
+    heal(amount) {
+        this.health = Math.min(this.maxHealth, this.health + amount);
+    }
+
     update(deltaTime) {
         if (this.hitFlashTime > 0) {
             this.hitFlashTime -= deltaTime;

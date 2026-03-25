@@ -1,25 +1,59 @@
 import { Entity } from './entity.js';
+import { createSkill } from './skill.js';
 
 class Tower extends Entity {
     constructor(x, y) {
         super(x, y, 'tower');
 
-        this.range = 150;
+        this._range = 150;
         this.target = null;
         this.passiveSkill = null;
         this.collisionRadius = 15;
 
         this.damage = 25;
         this.attackCooldown = 1;
+        this._attackRange = 150;
+        this.attackType = 'physical';
         this.critRate = 0.1;
         this.critDamage = 1.5;
         this.lastAttackTarget = null;
         this.attackFlashTimer = 0;
+        this.color = '#fbbf24';
+        this.projectileColor = '#f59e0b';
+        this.towerTypeId = 'default';
+    }
+
+    get range() {
+        return this._range;
+    }
+
+    set range(value) {
+        this._range = value;
+        this._attackRange = value;
+    }
+
+    get attackRange() {
+        return this._attackRange;
+    }
+
+    set attackRange(value) {
+        this._attackRange = value;
+        this._range = value;
     }
 
     applySkill(game) {
         if (game && game.skillManager) {
             game.skillManager.applyAllSkills(game, this);
+        }
+    }
+
+    applyInitialSkill(game, skillId) {
+        if (!skillId || !game) return;
+        
+        const skill = createSkill(skillId);
+        if (skill) {
+            skill.apply(game, this);
+            this.initialSkill = skill;
         }
     }
 
@@ -78,12 +112,12 @@ class Tower extends Entity {
         if (this.isTakingDamage) {
             ctx.fillStyle = '#ffffff';
         } else {
-            ctx.fillStyle = '#4a90d9';
+            ctx.fillStyle = this.color || '#4a90d9';
         }
         ctx.fillRect(this.x - 15, this.y - 15, 30, 30);
 
         if (!this.isTakingDamage) {
-            ctx.strokeStyle = '#2d5a87';
+            ctx.strokeStyle = this.color ? this.darkenColor(this.color, 0.3) : '#2d5a87';
             ctx.lineWidth = 2;
             ctx.strokeRect(this.x - 15, this.y - 15, 30, 30);
         }
@@ -115,6 +149,16 @@ class Tower extends Entity {
             ctx.fillStyle = hpRatio > 0.5 ? '#2ecc71' : hpRatio > 0.25 ? '#f39c12' : '#e74c3c';
             ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight);
         }
+    }
+
+    darkenColor(hex, factor) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        const dr = Math.round(r * (1 - factor));
+        const dg = Math.round(g * (1 - factor));
+        const db = Math.round(b * (1 - factor));
+        return `rgb(${dr}, ${dg}, ${db})`;
     }
 }
 

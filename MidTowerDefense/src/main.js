@@ -6,6 +6,8 @@ import { Enemy } from './game/enemy.js';
 import { EntityManager } from './game/entity_manager.js';
 import { SkillManager } from './game/skill_manager.js';
 import { ProjectileManager } from './game/projectile.js';
+import { TowerFactory } from './game/tower_factory.js';
+import { getAllTowerTypes } from './game/tower_types.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -13,8 +15,63 @@ const ctx = canvas.getContext('2d');
 canvas.width = DEFAULT_MAP_SIZE * TILE_SIZE;
 canvas.height = DEFAULT_MAP_SIZE * TILE_SIZE;
 
+let gameInstance = null;
+let selectedTowerType = null;
+
+function showTowerSelection() {
+    const selectionDiv = document.getElementById('towerSelection');
+    const towerCardsDiv = document.getElementById('towerCards');
+    const startBtn = document.getElementById('startBtn');
+
+    const towerTypes = getAllTowerTypes();
+
+    towerCardsDiv.innerHTML = '';
+
+    towerTypes.forEach(towerType => {
+        const card = document.createElement('div');
+        card.className = 'tower-card';
+        card.dataset.typeId = towerType.id;
+
+        card.innerHTML = `
+            <div class="tower-icon" style="background: ${towerType.color}"></div>
+            <div class="tower-name">${towerType.name}</div>
+            <div class="tower-desc">${towerType.description}</div>
+            <div class="tower-stats">
+                <div>伤害: ${towerType.damage}</div>
+                <div>攻速: ${(1 / towerType.attackCooldown).toFixed(1)}/秒</div>
+                <div>范围: ${towerType.attackRange}</div>
+            </div>
+            <div class="tower-skill">初始技能: ${towerType.initialSkill}</div>
+        `;
+
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedTowerType = towerType.id;
+            startBtn.disabled = false;
+        });
+
+        towerCardsDiv.appendChild(card);
+    });
+
+    startBtn.addEventListener('click', () => {
+        if (selectedTowerType) {
+            selectionDiv.classList.add('hidden');
+            startGame(selectedTowerType);
+        }
+    });
+
+    selectionDiv.classList.remove('hidden');
+}
+
+function startGame(towerTypeId) {
+    gameInstance = new Game(canvas, ctx, towerTypeId);
+    window.gameInstance = gameInstance;
+    gameInstance.start();
+}
+
 class Game {
-    constructor(canvas, ctx) {
+    constructor(canvas, ctx, initialTowerType = null) {
         this.canvas = canvas;
         this.ctx = ctx;
         this.lastTime = 0;
@@ -31,7 +88,21 @@ class Game {
         this.skillManager.initWithRandomSkills();
         this.projectiles = new ProjectileManager();
 
-        this.spawnTower(12, 12);
+        if (initialTowerType) {
+            this.spawnInitialTower(initialTowerType);
+        }
+    }
+
+    spawnInitialTower(towerTypeId) {
+        const centerPos = this.map.getCenterWorld();
+        const tower = TowerFactory.create(towerTypeId, centerPos.x, centerPos.y, this);
+        
+        if (tower) {
+            this.entityManager.addEntity(tower);
+            return tower;
+        }
+
+        return this.spawnTower(12, 12, false);
     }
 
     update(deltaTime) {
@@ -60,8 +131,18 @@ class Game {
         }
 
         const enemy = new Enemy(x, y);
-        enemy.setTarget(this.crystal);
-        this.entityManager.addEntity(enemy);
+        const availableDirs = this.getAvailableSpawnDirections();
+        
+        if (availableDirs.length > 0) {
+            const dir = availableDirs[Math.floor(Math.random() * availableDirs.length)];
+            enemy.setDirection(dir);
+            enemy.moveSpeed = 30 + Math.random() * 20;
+            this.entityManager.addEntity(enemy);
+        }
+    }
+
+    getAvailableSpawnDirections() {
+        return getAvailableDirections(this.occupiedDirections);
     }
 
     spawnTower(gridX, gridY, applySkills = true) {
@@ -97,18 +178,12 @@ class Game {
     }
 
     start() {
-        requestAnimationFrame((time) => {
-            this.lastTime = time;
-            this.gameLoop(time);
-        });
+        this.lastTime = performance.now();
+        this.gameLoop(this.lastTime);
     }
 
-    selectDirection(direction) {
-        if (isDirectionOccupied(direction, this.occupiedDirections)) {
-            return false;
-        }
-        this.occupiedDirections.push(direction);
-        return true;
+    setOccupiedDirections(directions) {
+        this.occupiedDirections = directions;
     }
 
     getAvailableDirections() {
@@ -123,7 +198,6 @@ class Game {
     }
 }
 
-const gameInstance = new Game(canvas, ctx);
-gameInstance.start();
-
-window.gameInstance = gameInstance;
+if (typeof window !== 'undefined') {
+    showTowerSelection();
+}
