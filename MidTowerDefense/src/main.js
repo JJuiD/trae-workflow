@@ -76,6 +76,9 @@ function showTowerSelection() {
 function showPositionSelection() {
     const positionDiv = document.getElementById('positionSelection');
     const backBtn = document.getElementById('backBtn');
+    const confirmBtn = document.getElementById('confirmBtn');
+
+    confirmBtn.disabled = true;
 
     tempMap = new Map(DEFAULT_MAP_SIZE);
     tempRenderer = new MapRenderer(ctx, TILE_SIZE);
@@ -148,7 +151,6 @@ function showPositionSelection() {
     }
 
     function handleClick(e) {
-        console.log('Click! hoverGridX:', hoverGridX, 'hoverGridY:', hoverGridY, 'canPlace:', canPlace);
         if (hoverGridX >= 0 && hoverGridY >= 0 && canPlace) {
             const worldX = hoverGridX * TILE_SIZE + TILE_SIZE / 2;
             const worldY = hoverGridY * TILE_SIZE + TILE_SIZE / 2;
@@ -158,13 +160,17 @@ function showPositionSelection() {
             canvas.removeEventListener('mousemove', handleMouseMove);
             canvas.removeEventListener('click', handleClick);
 
-            positionDiv.classList.add('hidden');
-            startGame(selectedTowerType, hoverGridX, hoverGridY);
+            confirmBtn.disabled = false;
         }
     }
 
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('click', handleClick);
+
+    confirmBtn.addEventListener('click', () => {
+        positionDiv.classList.add('hidden');
+        startGame(selectedTowerType, hoverGridX, hoverGridY);
+    });
 
     positionDiv.classList.remove('hidden');
     renderPreview();

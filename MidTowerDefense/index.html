@@ -141,6 +141,27 @@
         .back-btn:hover {
             background: #5a5a7a;
         }
+        .confirm-btn {
+            margin-top: 15px;
+            padding: 12px 40px;
+            font-size: 18px;
+            background: linear-gradient(145deg, #4ade80, #22c55e);
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .confirm-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+        }
+        .confirm-btn:disabled {
+            background: #4a4a6a;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
         .position-hint {
             color: #9ca3af;
             font-size: 14px;
@@ -180,6 +201,7 @@
         <div id="positionSelection" class="hidden">
             <h1 class="selection-title">选择放置位置</h1>
             <p class="position-hint">点击地图上的格子放置你的塔</p>
+            <button class="confirm-btn" id="confirmBtn" disabled>开始游戏</button>
             <button class="back-btn" id="backBtn">返回</button>
         </div>
     </div>
