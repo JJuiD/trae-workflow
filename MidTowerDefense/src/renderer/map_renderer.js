@@ -1,4 +1,4 @@
-import { PLAYER_GRID_POSITIONS } from './game/player_position.js';
+import { PLAYER_GRID_POSITIONS } from '../game/player_position.js';
 
 const GRID_COLOR = '#1a1a2e';
 const GRID_LINE_WIDTH = 1;
