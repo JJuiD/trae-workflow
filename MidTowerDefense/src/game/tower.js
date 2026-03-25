@@ -94,6 +94,20 @@ class Tower extends Entity {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
         ctx.stroke();
+
+        if (this.hp < this.maxHp) {
+            const barWidth = 30;
+            const barHeight = 4;
+            const barX = this.x - barWidth / 2;
+            const barY = this.y + 20;
+
+            ctx.fillStyle = '#333';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+
+            const hpRatio = this.hp / this.maxHp;
+            ctx.fillStyle = hpRatio > 0.5 ? '#2ecc71' : hpRatio > 0.25 ? '#f39c12' : '#e74c3c';
+            ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight);
+        }
     }
 }
 

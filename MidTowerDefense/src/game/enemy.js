@@ -20,31 +20,40 @@ class Enemy extends Entity {
     update(deltaTime, towers, crystal) {
         if (!this.isAlive) return;
 
-        if (!this.target || !this.target.isAlive) {
-            this.target = crystal;
-        }
+        const targetTower = this.findTargetTower(towers);
 
-        const dx = this.target.x - this.x;
-        const dy = this.target.y - this.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (targetTower) {
+            this.target = targetTower;
+            const dx = this.target.x - this.x;
+            const dy = this.target.y - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist > 5) {
-            const moveX = (dx / dist) * this.speed * deltaTime;
-            const moveY = (dy / dist) * this.speed * deltaTime;
-            this.x += moveX;
-            this.y += moveY;
-        } else {
-            if (this.target.type === 'crystal') {
-                this.attackCrystal(this.target);
-            } else if (this.target.type === 'tower') {
+            if (dist > 20) {
+                const moveX = (dx / dist) * this.speed * deltaTime;
+                const moveY = (dy / dist) * this.speed * deltaTime;
+                this.x += moveX;
+                this.y += moveY;
+            } else {
                 this.attackTower(this.target);
             }
-        }
+        } else {
+            this.target = crystal;
+            const dx = this.target.x - this.x;
+            const dy = this.target.y - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-        this.checkTowerInRange(towers, crystal);
+            if (dist > 5) {
+                const moveX = (dx / dist) * this.speed * deltaTime;
+                const moveY = (dy / dist) * this.speed * deltaTime;
+                this.x += moveX;
+                this.y += moveY;
+            } else {
+                this.attackCrystal(this.target);
+            }
+        }
     }
 
-    checkTowerInRange(towers, crystal) {
+    findTargetTower(towers) {
         let closestTower = null;
         let closestDist = Infinity;
 
@@ -61,9 +70,7 @@ class Enemy extends Entity {
             }
         }
 
-        if (closestTower) {
-            this.target = closestTower;
-        }
+        return closestTower;
     }
 
     attackCrystal(crystal) {
