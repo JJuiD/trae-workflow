@@ -10,7 +10,7 @@ class Enemy extends Entity {
         this.damageFlashTimer = 0;
         this.target = null;
         this.originalTarget = null;
-        this.collisionRadius = 8;
+        this.collisionRadius = 3;
     }
 
     setTarget(target) {
