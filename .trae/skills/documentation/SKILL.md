@@ -93,7 +93,6 @@ git diff --stat
 | 文件 | 路径 |
 |------|------|
 | 项目文档 | `e:\project\trae-workflow\docs` |
-| 阶段文档 | `e:\project\trae-workflow\docs\phase` |
 | 规则文档 | `e:\project\trae-workflow\.trae\rules` |
 | 任务文档 | `e:\project\trae-workflow\plans` |
 | 开发进度记录 | `e:\project\trae-workflow\.trae\rules\development-plan.md` |

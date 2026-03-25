@@ -34,9 +34,9 @@ description: "Analyzes existing features and outputs structured tasks. Invoke wh
 - 技术选型决策
 - 里程碑节点
 
-#### 2. 查阅phase目录
+#### 2. 查阅历史文档
 
-检查 `e:\project\trae-workflow\docs\phase` 目录：
+检查 `e:\project\trae-workflow\docs` 目录：
 - 列出所有历史阶段文档
 - 按时间顺序梳理各阶段实现内容
 - 提取关键技术决策和变更记录
@@ -116,7 +116,7 @@ description: "Analyzes existing features and outputs structured tasks. Invoke wh
 | 文件 | 路径 |
 |------|------|
 | 开发计划 | `e:\project\trae-workflow\docs\开发计划.md` |
-| 历史阶段目录 | `e:\project\trae-workflow\docs\phase` |
+| 历史阶段目录 | `e:\project\trae-workflow\docs` |
 | 开发进度记录 | `e:\project\trae-workflow\.trae\rules\development-plan.md` |
 
 ## 注意事项
