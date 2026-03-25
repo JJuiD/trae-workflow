@@ -90,4 +90,4 @@ function getAvailableDirections(occupiedDirections) {
     );
 }
 
-export { Map, Position, TileType, TILE_SIZE, DEFAULT_MAP_SIZE, isDirectionOccupied, getAvailableDirections, canPlaceTower };
+export { Map, Position, TileType, TILE_SIZE, DEFAULT_MAP_SIZE, isDirectionOccupied, getAvailableDirections };
