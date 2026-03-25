@@ -40,3 +40,5 @@ class SkillSlot {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { SkillSlot };
 }
+
+export { SkillSlot };

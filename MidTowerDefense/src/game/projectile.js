@@ -116,3 +116,5 @@ class ProjectileManager {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { Projectile, ProjectileManager };
 }
+
+export { Projectile, ProjectileManager };

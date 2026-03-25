@@ -154,3 +154,5 @@ class SkillManager {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { SkillManager };
 }
+
+export { SkillManager };

@@ -59,3 +59,5 @@ if (typeof module !== 'undefined' && module.exports) {
         checkSetBonus
     };
 }
+
+export { SKILL_POOLS, SET_BONUSES, getSkillPool, getRandomSkillFromPool, getSetBonus, checkSetBonus };
