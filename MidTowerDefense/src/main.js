@@ -27,7 +27,8 @@ class Game {
         this.entityManager.addEntity(this.testTower);
 
         this.spawnTimer = 0;
-        this.spawnInterval = 3;
+        this.spawnInterval = 0.5;
+        this.enemiesPerSpawn = 3;
     }
 
     update(deltaTime) {
@@ -38,7 +39,9 @@ class Game {
         this.spawnTimer += deltaTime / 1000;
         if (this.spawnTimer >= this.spawnInterval) {
             this.spawnTimer = 0;
-            this.spawnEnemy();
+            for (let i = 0; i < this.enemiesPerSpawn; i++) {
+                this.spawnEnemy();
+            }
         }
     }
 
