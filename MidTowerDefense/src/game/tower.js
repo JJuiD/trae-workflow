@@ -12,10 +12,16 @@ class Tower extends Entity {
         this.attackCooldown = 1;
         this.critRate = 0.1;
         this.critDamage = 1.5;
+        this.lastAttackTarget = null;
+        this.attackFlashTimer = 0;
     }
 
     update(deltaTime, enemies) {
         super.update(deltaTime);
+
+        if (this.attackFlashTimer > 0) {
+            this.attackFlashTimer -= deltaTime;
+        }
 
         if (!this.isAlive) return;
 
@@ -55,17 +61,34 @@ class Tower extends Entity {
         }
 
         target.takeDamage(finalDamage);
+        this.lastAttackTarget = target;
+        this.attackFlashTimer = 0.15;
     }
 
     render(ctx) {
         if (!this.isAlive) return;
 
-        ctx.fillStyle = '#4a90d9';
+        if (this.isTakingDamage) {
+            ctx.fillStyle = '#ffffff';
+        } else {
+            ctx.fillStyle = '#4a90d9';
+        }
         ctx.fillRect(this.x - 15, this.y - 15, 30, 30);
 
-        ctx.strokeStyle = '#2d5a87';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(this.x - 15, this.y - 15, 30, 30);
+        if (!this.isTakingDamage) {
+            ctx.strokeStyle = '#2d5a87';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(this.x - 15, this.y - 15, 30, 30);
+        }
+
+        if (this.attackFlashTimer > 0 && this.lastAttackTarget) {
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.lastAttackTarget.x, this.lastAttackTarget.y);
+            ctx.stroke();
+        }
 
         ctx.strokeStyle = 'rgba(74, 144, 217, 0.3)';
         ctx.beginPath();

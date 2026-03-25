@@ -25,6 +25,8 @@ class Entity {
         this.currentCooldown = 0;
 
         this.isAlive = true;
+        this.isTakingDamage = false;
+        this.damageFlashTimer = 0;
     }
 
     update(deltaTime) {
@@ -32,6 +34,13 @@ class Entity {
             this.currentCooldown -= deltaTime;
             if (this.currentCooldown < 0) {
                 this.currentCooldown = 0;
+            }
+        }
+
+        if (this.damageFlashTimer > 0) {
+            this.damageFlashTimer -= deltaTime;
+            if (this.damageFlashTimer <= 0) {
+                this.isTakingDamage = false;
             }
         }
     }
@@ -42,6 +51,10 @@ class Entity {
     takeDamage(amount) {
         const actualDamage = Math.max(1, amount * (1 - this.defense));
         this.hp -= actualDamage;
+
+        this.isTakingDamage = true;
+        this.damageFlashTimer = 0.2;
+
         if (this.hp <= 0) {
             this.hp = 0;
             this.isAlive = false;
