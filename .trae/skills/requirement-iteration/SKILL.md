@@ -117,6 +117,7 @@ description: "Analyzes existing features and outputs structured tasks. Invoke wh
 |------|------|
 | 开发计划 | `e:\project\trae-workflow\docs\开发计划.md` |
 | 历史阶段目录 | `e:\project\trae-workflow\docs` |
+| 知识模块目录 | `e:\project\trae-workflow\docs\modules` |
 | 开发进度记录 | `e:\project\trae-workflow\.trae\rules\development-plan.md` |
 
 ## 注意事项
