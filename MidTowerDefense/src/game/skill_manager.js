@@ -1,6 +1,6 @@
-const { SkillSlot } = require('./skill_slot');
-const { createSkill, getSkillsByLevel } = require('./skill');
-const { getRandomSkillFromPool, checkSetBonus } = require('./skill_pool');
+import { SkillSlot } from './skill_slot.js';
+import { createSkill, getSkillsByLevel } from './skill.js';
+import { getRandomSkillFromPool, checkSetBonus } from './skill_pool.js';
 
 class SkillManager {
     constructor() {
