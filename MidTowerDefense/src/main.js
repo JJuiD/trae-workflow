@@ -1,4 +1,4 @@
-import { Map, TILE_SIZE, DEFAULT_MAP_SIZE, isDirectionOccupied, getAvailableDirections } from './game/map.js';
+import { Map, TILE_SIZE, DEFAULT_MAP_SIZE, isDirectionOccupied, getAvailableDirections, getAllPlayerGridPositions } from './game/map.js';
 import { Crystal } from './game/crystal.js';
 import { MapRenderer } from './renderer/map_renderer.js';
 import { Tower } from './game/tower.js';
@@ -96,12 +96,7 @@ function showPositionSelection() {
         const centerPos = tempMap.getCenterWorld();
         tempRenderer.renderMap(tempMap, { x: centerPos.x, y: centerPos.y, getColor: () => '#00fff5', isAlive: () => true }, []);
 
-        const validPositions = [
-            { gridX: 12, gridY: 11 },
-            { gridX: 12, gridY: 13 },
-            { gridX: 11, gridY: 12 },
-            { gridX: 13, gridY: 12 }
-        ];
+        const validPositions = getAllPlayerGridPositions();
 
         validPositions.forEach(pos => {
             const worldX = pos.gridX * TILE_SIZE + TILE_SIZE / 2;

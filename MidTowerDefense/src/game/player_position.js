@@ -16,4 +16,8 @@ function getPlayerGridPosition(direction) {
     return PLAYER_GRID_POSITIONS[direction];
 }
 
-export { DIRECTION_TOP, DIRECTION_BOTTOM, DIRECTION_LEFT, DIRECTION_RIGHT, ALL_DIRECTIONS, PLAYER_GRID_POSITIONS, getPlayerGridPosition };
+function getAllPlayerGridPositions() {
+    return Object.values(PLAYER_GRID_POSITIONS);
+}
+
+export { DIRECTION_TOP, DIRECTION_BOTTOM, DIRECTION_LEFT, DIRECTION_RIGHT, ALL_DIRECTIONS, PLAYER_GRID_POSITIONS, getPlayerGridPosition, getAllPlayerGridPositions };
