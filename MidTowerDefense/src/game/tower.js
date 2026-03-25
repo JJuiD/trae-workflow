@@ -7,6 +7,7 @@ class Tower extends Entity {
         this.range = 150;
         this.target = null;
         this.passiveSkill = null;
+        this.collisionRadius = 15;
 
         this.damage = 25;
         this.attackCooldown = 1;
