@@ -1,3 +1,5 @@
+import { checkCollision, resolveCollision } from './entity.js';
+
 class EntityManager {
     constructor() {
         this.entities = [];
@@ -43,6 +45,14 @@ class EntityManager {
                 entity.update(deltaTime, this.towers, crystal);
             } else {
                 entity.update(deltaTime);
+            }
+        }
+
+        for (let i = 0; i < this.enemies.length; i++) {
+            for (let j = i + 1; j < this.enemies.length; j++) {
+                if (checkCollision(this.enemies[i], this.enemies[j])) {
+                    resolveCollision(this.enemies[i], this.enemies[j]);
+                }
             }
         }
 

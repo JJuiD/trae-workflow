@@ -10,6 +10,8 @@ class Entity {
         this.type = type;
         this.x = x;
         this.y = y;
+        this.collisionRadius = 15;
+        this.hasCollision = true;
 
         this.hp = 100;
         this.maxHp = 100;
@@ -70,4 +72,31 @@ class Entity {
     }
 }
 
-export { Entity, generateEntityId };
+function checkCollision(entityA, entityB) {
+    if (!entityA.hasCollision || !entityB.hasCollision) return false;
+
+    const dx = entityA.x - entityB.x;
+    const dy = entityA.y - entityB.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    return dist < entityA.collisionRadius + entityB.collisionRadius;
+}
+
+function resolveCollision(entityA, entityB) {
+    const dx = entityA.x - entityB.x;
+    const dy = entityA.y - entityB.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const minDist = entityA.collisionRadius + entityB.collisionRadius;
+
+    if (dist < minDist && dist > 0) {
+        const overlap = minDist - dist;
+        const moveX = (dx / dist) * (overlap / 2);
+        const moveY = (dy / dist) * (overlap / 2);
+
+        entityA.x += moveX;
+        entityA.y += moveY;
+        entityB.x -= moveX;
+        entityB.y -= moveY;
+    }
+}
+
+export { Entity, generateEntityId, checkCollision, resolveCollision };
