@@ -4,6 +4,21 @@
 
 用户说"创建需求"时触发工作流：**新需求**直接由 `development-workflow` 创建分支；**迭代需求**则先由 `requirement-iteration` 分析现有功能，再由 `development-workflow` 创建分支；随后 `requirement-discussion` 明确需求后进入开发阶段，由 `development-assistance` 提供代码生成和问题排查支持，`code-review` 进行最多3轮迭代审查，`documentation` 更新文档后自动提交 Merge Request 到 master 分支。
 
+## 自动触发规则
+
+### Code Review 自动触发
+
+**触发条件**（需同时满足）：
+1. `e:\project\trae-workflow\.trae\rules\development-plan.md` 中的任务状态为"**开发中**"
+2. 当前 Git 处于**非 main/master 的分支**上
+
+**触发时机**：每次对话完成（assistant 回复后）自动触发 `code-review` skill
+
+**触发行为**：
+- 执行 `e:\project\trae-workflow\.trae\skills\code-review\SKILL.md` 中的代码审查流程
+- 生成审查报告并呈现给用户
+- 根据审查结果更新开发进度状态
+
 ## 目录结构
 
 ```
