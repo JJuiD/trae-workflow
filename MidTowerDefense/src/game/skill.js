@@ -1,3 +1,5 @@
+const MS_PER_SECOND = 1000;
+
 const PASSIVE_EFFECTS = {
     damage_boost: (entity, value) => {
         entity.damage *= (1 + value);
@@ -28,7 +30,13 @@ const TIMED_EFFECTS = {
                     type: 'fireball'
                 });
             }
-        }, config.interval * 1000);
+        }, config.interval * MS_PER_SECOND);
+
+        const cleanup = () => clearInterval(intervalId);
+        entity.on('death', cleanup);
+        entity.skillCleanup = entity.skillCleanup || [];
+        entity.skillCleanup.push(cleanup);
+
         return intervalId;
     },
     lightning_strike: (game, entity, config) => {
@@ -43,7 +51,13 @@ const TIMED_EFFECTS = {
             targets.forEach(target => {
                 target.takeDamage(config.damage);
             });
-        }, config.interval * 1000);
+        }, config.interval * MS_PER_SECOND);
+
+        const cleanup = () => clearInterval(intervalId);
+        entity.on('death', cleanup);
+        entity.skillCleanup = entity.skillCleanup || [];
+        entity.skillCleanup.push(cleanup);
+
         return intervalId;
     },
 };
@@ -53,7 +67,7 @@ const TRIGGER_EFFECTS = {
         const handler = (damageData) => {
             const now = Date.now();
             const lastTime = entity.lastShieldTime || 0;
-            if (now - lastTime >= config.cooldown * 1000) {
+            if (now - lastTime >= config.cooldown * MS_PER_SECOND) {
                 entity.addShield(config.shieldValue);
                 entity.lastShieldTime = now;
             }
@@ -65,7 +79,7 @@ const TRIGGER_EFFECTS = {
         const handler = () => {
             const now = Date.now();
             const lastTime = entity.lastHealTime || 0;
-            if (now - lastTime >= config.cooldown * 1000) {
+            if (now - lastTime >= config.cooldown * MS_PER_SECOND) {
                 entity.heal(config.healValue);
                 entity.lastHealTime = now;
             }
