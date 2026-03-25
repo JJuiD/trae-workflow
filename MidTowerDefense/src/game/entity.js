@@ -99,6 +99,7 @@ class Entity {
         if (this.hp <= 0) {
             this.hp = 0;
             this.isAlive = false;
+            this.emit('death');
         }
         return actualDamage;
     }
