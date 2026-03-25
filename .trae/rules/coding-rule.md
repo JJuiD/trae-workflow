@@ -22,7 +22,8 @@ description: Follow these guidelines when writing code
 | 类型 | 规范 | 示例 |
 |------|------|------|
 | 目录/文件 | lowercase_with_underscores | game_entity, tower_attack.py |
-| 类名 | PascalCase | TowerBase |
+| 类名 | PascalCase | TowerBase, Game |
+| 类方法 | PascalCase | gameLoop, updatePosition |
 | 函数/变量 | lowercase_with_underscores | calculate_damage, tower_level |
 
 - 使用有意义的名称，避免 `data`、`temp`、`tmp`
