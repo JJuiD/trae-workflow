@@ -7,7 +7,7 @@ import { EntityManager } from './game/entity_manager.js';
 import { SkillManager } from './game/skill_manager.js';
 import { ProjectileManager } from './game/projectile.js';
 import { TowerFactory } from './game/tower_factory.js';
-import { getAllTowerTypes } from './game/tower_types.js';
+import { getTowerType, getAllTowerTypes } from './game/tower_types.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -17,14 +17,20 @@ canvas.height = DEFAULT_MAP_SIZE * TILE_SIZE;
 
 let gameInstance = null;
 let selectedTowerType = null;
+let tempMap = null;
+let tempRenderer = null;
 
 function showTowerSelection() {
     const selectionDiv = document.getElementById('towerSelection');
+    const positionDiv = document.getElementById('positionSelection');
     const towerCardsDiv = document.getElementById('towerCards');
     const startBtn = document.getElementById('startBtn');
+    const backBtn = document.getElementById('backBtn');
+
+    positionDiv.classList.add('hidden');
+    selectionDiv.classList.remove('hidden');
 
     const towerTypes = getAllTowerTypes();
-
     towerCardsDiv.innerHTML = '';
 
     towerTypes.forEach(towerType => {
@@ -57,25 +63,114 @@ function showTowerSelection() {
     startBtn.addEventListener('click', () => {
         if (selectedTowerType) {
             selectionDiv.classList.add('hidden');
-            startGame(selectedTowerType);
+            showPositionSelection();
         }
     });
 
-    selectionDiv.classList.remove('hidden');
+    backBtn.addEventListener('click', () => {
+        positionDiv.classList.add('hidden');
+        selectionDiv.classList.remove('hidden');
+    });
 }
 
-function startGame(towerTypeId) {
-    gameInstance = new Game(canvas, ctx, towerTypeId);
+function showPositionSelection() {
+    const positionDiv = document.getElementById('positionSelection');
+    const backBtn = document.getElementById('backBtn');
+
+    tempMap = new Map(DEFAULT_MAP_SIZE);
+    tempRenderer = new MapRenderer(ctx, TILE_SIZE);
+
+    let hoverGridX = -1;
+    let hoverGridY = -1;
+    let canPlace = false;
+
+    function renderPreview() {
+        ctx.fillStyle = '#16213e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const centerPos = tempMap.getCenterWorld();
+        tempRenderer.renderMap(tempMap, { x: centerPos.x, y: centerPos.y, getColor: () => '#00fff5', isAlive: () => true }, []);
+
+        if (hoverGridX >= 0 && hoverGridY >= 0) {
+            const worldX = hoverGridX * TILE_SIZE + TILE_SIZE / 2;
+            const worldY = hoverGridY * TILE_SIZE + TILE_SIZE / 2;
+
+            canPlace = tempMap.canPlaceTower(hoverGridX, hoverGridY);
+
+            ctx.fillStyle = canPlace ? 'rgba(74, 222, 128, 0.5)' : 'rgba(239, 68, 68, 0.5)';
+            ctx.fillRect(hoverGridX * TILE_SIZE, hoverGridY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+            ctx.strokeStyle = canPlace ? '#4ade80' : '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(hoverGridX * TILE_SIZE, hoverGridY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+            const towerType = getTowerType(selectedTowerType);
+            if (towerType) {
+                ctx.fillStyle = towerType.color || '#fbbf24';
+                ctx.globalAlpha = 0.7;
+                ctx.fillRect(worldX - 15, worldY - 15, 30, 30);
+                ctx.globalAlpha = 1.0;
+
+                ctx.strokeStyle = 'rgba(74, 144, 217, 0.3)';
+                ctx.beginPath();
+                ctx.arc(worldX, worldY, towerType.attackRange, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        if (!positionDiv.classList.contains('hidden')) {
+            requestAnimationFrame(renderPreview);
+        }
+    }
+
+    function handleMouseMove(e) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        hoverGridX = Math.floor(mouseX / TILE_SIZE);
+        hoverGridY = Math.floor(mouseY / TILE_SIZE);
+    }
+
+    function handleClick(e) {
+        if (hoverGridX >= 0 && hoverGridY >= 0 && canPlace) {
+            const worldX = hoverGridX * TILE_SIZE + TILE_SIZE / 2;
+            const worldY = hoverGridY * TILE_SIZE + TILE_SIZE / 2;
+
+            tempMap.setTile(hoverGridX, hoverGridY, 1);
+
+            canvas.removeEventListener('mousemove', handleMouseMove);
+            canvas.removeEventListener('click', handleClick);
+
+            positionDiv.classList.add('hidden');
+            startGame(selectedTowerType, hoverGridX, hoverGridY);
+        }
+    }
+
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('click', handleClick);
+
+    positionDiv.classList.remove('hidden');
+    renderPreview();
+}
+
+function startGame(towerTypeId, gridX, gridY) {
+    gameInstance = new Game(canvas, ctx, towerTypeId, gridX, gridY);
     window.gameInstance = gameInstance;
     gameInstance.start();
 }
 
 class Game {
-    constructor(canvas, ctx, initialTowerType = null) {
+    constructor(canvas, ctx, initialTowerType = null, initialGridX = null, initialGridY = null) {
         this.canvas = canvas;
         this.ctx = ctx;
         this.lastTime = 0;
         this.map = new Map(DEFAULT_MAP_SIZE);
+
+        if (initialGridX !== null && initialGridY !== null) {
+            this.map.setTile(initialGridX, initialGridY, 1);
+        }
+
         const centerPos = this.map.getCenterWorld();
         this.crystal = new Crystal(centerPos.x, centerPos.y);
         this.mapRenderer = new MapRenderer(ctx, TILE_SIZE);
@@ -88,21 +183,36 @@ class Game {
         this.skillManager.initWithRandomSkills();
         this.projectiles = new ProjectileManager();
 
-        if (initialTowerType) {
-            this.spawnInitialTower(initialTowerType);
+        if (initialTowerType && initialGridX !== null && initialGridY !== null) {
+            this.spawnInitialTower(initialTowerType, initialGridX, initialGridY);
         }
     }
 
-    spawnInitialTower(towerTypeId) {
-        const centerPos = this.map.getCenterWorld();
-        const tower = TowerFactory.create(towerTypeId, centerPos.x, centerPos.y, this);
+    spawnInitialTower(towerTypeId, gridX, gridY) {
+        const worldX = gridX * TILE_SIZE + TILE_SIZE / 2;
+        const worldY = gridY * TILE_SIZE + TILE_SIZE / 2;
+        const tower = TowerFactory.create(towerTypeId, worldX, worldY, this);
         
         if (tower) {
             this.entityManager.addEntity(tower);
             return tower;
         }
 
-        return this.spawnTower(12, 12, false);
+        const centerPos = this.map.getCenterWorld();
+        return this.spawnTowerAt(centerPos.x / TILE_SIZE, centerPos.y / TILE_SIZE, false);
+    }
+
+    spawnTowerAt(gridX, gridY, applySkills = true) {
+        const worldX = gridX * TILE_SIZE + TILE_SIZE / 2;
+        const worldY = gridY * TILE_SIZE + TILE_SIZE / 2;
+        const tower = new Tower(worldX, worldY);
+        
+        if (applySkills) {
+            tower.applySkill(this);
+        }
+        
+        this.entityManager.addEntity(tower);
+        return tower;
     }
 
     update(deltaTime) {

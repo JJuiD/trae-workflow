@@ -51,6 +51,16 @@ class Map {
         return x >= 0 && x < this.size && y >= 0 && y < this.size;
     }
 
+    canPlaceTower(gridX, gridY) {
+        if (gridX < 0 || gridX >= this.size || gridY < 0 || gridY >= this.size) {
+            return false;
+        }
+        if (gridX === this.centerX && gridY === this.centerY) {
+            return false;
+        }
+        return this.tiles[gridY][gridX] === TileType.EMPTY;
+    }
+
     worldToGrid(worldX, worldY) {
         return {
             x: Math.floor(worldX / TILE_SIZE),
@@ -80,4 +90,4 @@ function getAvailableDirections(occupiedDirections) {
     );
 }
 
-export { Map, Position, TileType, TILE_SIZE, DEFAULT_MAP_SIZE, isDirectionOccupied, getAvailableDirections };
+export { Map, Position, TileType, TILE_SIZE, DEFAULT_MAP_SIZE, isDirectionOccupied, getAvailableDirections, canPlaceTower };

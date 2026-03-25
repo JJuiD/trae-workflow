@@ -127,6 +127,42 @@
             transform: none;
             box-shadow: none;
         }
+        .back-btn {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 14px;
+            background: #4a4a6a;
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: #5a5a7a;
+        }
+        .position-hint {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        #positionSelection {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 40px;
+            z-index: 10;
+        }
+        #positionSelection.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -135,7 +171,12 @@
         <div id="towerSelection">
             <h1 class="selection-title">选择你的初始塔</h1>
             <div class="tower-cards" id="towerCards"></div>
-            <button class="start-btn" id="startBtn" disabled>开始游戏</button>
+            <button class="start-btn" id="startBtn" disabled>下一步</button>
+        </div>
+        <div id="positionSelection" class="hidden">
+            <h1 class="selection-title">选择放置位置</h1>
+            <p class="position-hint">点击地图上的格子放置你的塔</p>
+            <button class="back-btn" id="backBtn">返回</button>
         </div>
     </div>
     <script type="module" src="src/main.js"></script>
