@@ -4,7 +4,7 @@
 
 用户说"创建需求"时触发工作流：**新需求**直接由 `development-workflow` 创建分支；**迭代需求**则先由 `requirement-iteration` 分析现有功能，再由 `development-workflow` 创建分支；随后 `requirement-discussion` 明确需求后进入开发阶段，由 `development-assistance` 提供代码生成和问题排查支持，`code-review` 进行最多3轮迭代审查，`documentation` 更新文档后自动提交 Merge Request 到 master 分支。
 
-如果 `e:\project\trae-workflow\.trae\rules\development-plan.md` 状态处于"**开发中**"，用户发起对话时自动执行上述完整工作流流程。
+如果 `e:\project\trae-workflow\.trae\rules\development-plan.md` 状态处于"**开发中**"，用户发起对话时自动由 `development-assistance` 提供代码生成和问题排查支持，`code-review` 进行最多3轮迭代审查的工作流流程。
 
 ## 目录结构
 
