@@ -1,4 +1,4 @@
-import { ALL_DIRECTIONS, getPlayerGridPosition } from './player_position.js';
+import { ALL_DIRECTIONS, getPlayerGridPosition, getAllPlayerGridPositions } from './player_position.js';
 
 const TILE_SIZE = 32;
 const DEFAULT_MAP_SIZE = 25;
