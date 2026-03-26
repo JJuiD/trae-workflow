@@ -66,6 +66,12 @@ git diff --stat
 - 更新配置说明
 - 更新常见问题
 
+#### 任务文档 (plans/)
+- 根据当前分支完成的内容更新对应任务文档
+- 记录完成状态（已完成/部分完成）
+- 记录实际完成的功能点
+- 添加完成时间戳
+
 ### 5. 验证文档一致性
 
 确保：
@@ -94,7 +100,7 @@ git diff --stat
 |------|------|
 | 项目文档 | `e:\project\trae-workflow\docs` |
 | 规则文档 | `e:\project\trae-workflow\.trae\rules` |
-| 任务文档 | `e:\project\trae-workflow\plans` |
+| 任务文档 | `e:\project\trae-workflow\plans\{任务名称}.md` |
 | 开发进度记录 | `e:\project\trae-workflow\.trae\rules\development-plan.md` |
 
 ## 注意事项
@@ -103,3 +109,4 @@ git diff --stat
 - 使用术语表中的标准术语
 - 保持文档简洁明了
 - 及时更新避免文档过期
+- 总结时更新对应的 `plans/` 目录下的任务文档，记录完成状态和完成内容
