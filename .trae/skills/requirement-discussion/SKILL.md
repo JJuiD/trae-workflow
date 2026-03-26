@@ -73,10 +73,19 @@ description: "Updates development plan docs with requirements and progress. Invo
 
 ## 状态流转
 
-| 触发条件 | 状态变更 | 后续Skill |
-|----------|----------|-----------|
-| 用户明确需求 | 需求已确认 | 继续讨论或调用 development-assistance |
-| 用户说"开始开发" | 策划中 → 开发中 | development-assistance |
+使用 AskUserQuestion 工具询问用户选择下一步：
+
+```
+options: [
+  { label: "1. 开始开发", description: "将任务状态从'策划中'流转为'开发中'" },
+  { label: "2. 继续讨论", description: "继续需求讨论，用户输入讨论内容" }
+]
+```
+
+| 选项 | 说明 |
+|------|------|
+| 1. 开始开发 | 将任务状态从"策划中"流转为"开发中"，触发 development-assistance |
+| 2. 继续讨论 | 继续需求讨论，用户输入讨论内容 |
 
 ## 文件路径
 

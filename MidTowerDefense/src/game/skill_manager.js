@@ -81,6 +81,7 @@ class SkillManager {
     }
 
     applyAllSkills(game, entity) {
+        // TODO: 多人游戏架构 - 需要根据 entity.owner 过滤，只应用属于该玩家的技能
         this.slots.forEach(slot => {
             if (slot.skill) {
                 slot.skill.apply(game, entity);

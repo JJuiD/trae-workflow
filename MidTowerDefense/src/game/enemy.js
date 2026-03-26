@@ -1,8 +1,8 @@
 import { Entity } from './entity.js';
 
 class Enemy extends Entity {
-    constructor(x, y) {
-        super(x, y, 'enemy');
+    constructor(x, y, owner = 'enemy') {
+        super(x, y, 'enemy', owner);
 
         this.speed = 60;
         this.damageToCrystal = 10;

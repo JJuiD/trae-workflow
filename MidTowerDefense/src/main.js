@@ -8,6 +8,9 @@ import { SkillManager } from './game/skill_manager.js';
 import { ProjectileManager } from './game/projectile.js';
 import { TowerFactory } from './game/tower_factory.js';
 import { getTowerType, getAllTowerTypes } from './game/tower_types.js';
+import { Gold, INITIAL_GOLD, getUpgradeCost, getRerollCost } from './game/gold.js';
+import { getSkillPool, getRandomSkillFromPool } from './game/skill_pool.js';
+import { createSkill, getSkillById } from './game/skill.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -19,6 +22,450 @@ let gameInstance = null;
 let selectedTowerType = null;
 let tempMap = null;
 let tempRenderer = null;
+let selectedSkillSlotIndex = -1;
+let upgradeOptions = [];
+let selectedUpgradeOption = -1;
+let pendingSkillOptions = {};
+
+function initGameUI() {
+    renderSkillSlots();
+    updateGoldDisplay();
+    setupUIEvents();
+}
+
+function renderSkillSlots() {
+    const slotsContainer = document.getElementById('skillSlots');
+    if (!slotsContainer || !gameInstance) return;
+
+    slotsContainer.innerHTML = '';
+    const slots = gameInstance.skillManager.slots;
+
+    for (let i = 0; i < 9; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'skill-slot';
+        slot.dataset.index = i;
+
+        if (slots[i].skill) {
+            const skill = slots[i].skill;
+            const isTimed = skill.category === 'timed';
+            const isTrigger = skill.category === 'trigger';
+
+            if (isTimed) slot.classList.add('timed');
+            if (isTrigger) slot.classList.add('trigger');
+
+            slot.innerHTML = `
+                <div class="skill-name">${skill.name || skill.id}</div>
+                <div class="skill-level">Lv.${slots[i].level}</div>
+            `;
+
+            slot.addEventListener('mouseenter', (e) => showSkillSlotTooltip(e, skill));
+            slot.addEventListener('mousemove', (e) => moveSkillSlotTooltip(e));
+            slot.addEventListener('mouseleave', () => hideSkillSlotTooltip());
+        } else {
+            slot.className += ' empty';
+            slot.innerHTML = '<div class="skill-name">空</div>';
+        }
+
+        if (i === selectedSkillSlotIndex) {
+            slot.classList += ' selected';
+        }
+
+        slot.addEventListener('click', () => selectSkillSlot(i));
+        slotsContainer.appendChild(slot);
+    }
+}
+
+function showSkillSlotTooltip(e, skill) {
+    let tooltip = document.getElementById('skillSlotTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'skillSlotTooltip';
+        tooltip.className = 'skill-slot-tooltip';
+        document.body.appendChild(tooltip);
+    }
+
+    const categoryLabels = {
+        'passive': '被动',
+        'timed': '主动',
+        'trigger': '触发'
+    };
+
+    let effectText = '';
+    if (skill.effect) {
+        const effectType = skill.effect.type;
+        const effectValue = skill.effect.value || skill.effect.damage || skill.effect.interval || '';
+        const effectUnit = skill.effect.interval ? '秒' : (skill.effect.value ? '%' : '');
+        effectText = `${effectType}: ${effectValue}${effectUnit}`;
+    }
+
+    tooltip.innerHTML = `
+        <div class="tooltip-skill-name">${skill.name}</div>
+        <div class="tooltip-skill-category">${categoryLabels[skill.category] || skill.category}</div>
+        <div class="tooltip-skill-desc">${skill.description || ''}</div>
+        <div class="tooltip-skill-effect">${effectText}</div>
+    `;
+
+    tooltip.classList.add('visible');
+    moveSkillSlotTooltip(e);
+}
+
+function moveSkillSlotTooltip(e) {
+    const tooltip = document.getElementById('skillSlotTooltip');
+    if (!tooltip) return;
+    tooltip.style.left = e.clientX + 15 + 'px';
+    tooltip.style.top = e.clientY + 10 + 'px';
+}
+
+function hideSkillSlotTooltip() {
+    const tooltip = document.getElementById('skillSlotTooltip');
+    if (tooltip) tooltip.classList.remove('visible');
+}
+
+function selectSkillSlot(index) {
+    selectedSkillSlotIndex = index;
+    selectedUpgradeOption = -1;
+
+    const slots = gameInstance.skillManager.slots;
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const rerollBtn = document.getElementById('rerollBtn');
+
+    if (index >= 0 && index < 9) {
+        const slot = slots[index];
+        upgradeBtn.disabled = slot.level >= 5;
+        rerollBtn.disabled = slot.level === 0;
+    }
+
+    renderSkillSlots();
+    hideUpgradeOptions();
+}
+
+function showUpgradeOptions() {
+    if (!gameInstance || selectedSkillSlotIndex < 0) return;
+
+    const slot = gameInstance.skillManager.slots[selectedSkillSlotIndex];
+    const currentLevel = slot.level;
+
+    if (currentLevel >= 5) return;
+
+    const cost = getUpgradeCost(currentLevel);
+    if (!gameInstance.gold.spend(cost) && currentLevel > 0) {
+        showMessage(`需要 ${cost} 金币`);
+        return;
+    }
+
+    const nextLevel = currentLevel + 1;
+
+    if (!pendingSkillOptions[selectedSkillSlotIndex] || pendingSkillOptions[selectedSkillSlotIndex].length === 0) {
+        const pool = getSkillPool(nextLevel);
+        if (!pool || pool.length === 0) {
+            showMessage('技能池为空');
+            return;
+        }
+        const shuffled = [...pool].sort(() => Math.random() - 0.5);
+        pendingSkillOptions[selectedSkillSlotIndex] = shuffled.slice(0, 3);
+    }
+
+    const options = pendingSkillOptions[selectedSkillSlotIndex];
+    if (!options || options.length === 0) {
+        showMessage('技能选项为空');
+        return;
+    }
+
+    upgradeOptions = options;
+    selectedUpgradeOption = -1;
+
+    const optionsContainer = document.getElementById('upgradeOptions');
+    if (!optionsContainer) return;
+
+    optionsContainer.innerHTML = '';
+
+    const canAfford = currentLevel === 0 || gameInstance.gold.get(cost);
+
+    options.forEach((skillId, idx) => {
+        const skillConfig = getSkillById(skillId);
+        const opt = document.createElement('div');
+        opt.className = 'skill-item' + (canAfford ? '' : ' disabled');
+        opt.dataset.skillId = skillId;
+        opt.dataset.index = idx;
+
+        const iconEmoji = getSkillIcon(skillId);
+        opt.innerHTML = `
+            <div class="skill-icon">${iconEmoji}</div>
+            <div class="skill-name">${skillConfig ? skillConfig.name : skillId}</div>
+        `;
+
+        opt.addEventListener('click', () => {
+            if (!canAfford) return;
+            selectUpgradeOption(idx);
+        });
+
+        opt.addEventListener('mouseenter', (e) => {
+            if (!skillConfig) return;
+            showSkillTooltip(e, skillConfig);
+        });
+
+        opt.addEventListener('mousemove', (e) => {
+            moveSkillTooltip(e);
+        });
+
+        opt.addEventListener('mouseleave', () => {
+            hideSkillTooltip();
+        });
+
+        optionsContainer.appendChild(opt);
+    });
+
+    document.getElementById('currentUpgradeCost').textContent = currentLevel === 0 ? '免费' : cost;
+    document.getElementById('confirmUpgradeBtn').disabled = true;
+
+    const modal = document.getElementById('upgradeModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function getSkillIcon(skillId) {
+    const icons = {
+        'power_strike': '⚔️',
+        'quick_shot': '🏹',
+        'sharp_arrow': '🎯',
+        'iron_will': '🛡️',
+        'fireball': '🔥',
+        'ice_arrow': '❄️',
+        'poison_dart': '🌿',
+        'lightning_bolt': '⚡',
+        'chain_lightning': '🌩️',
+        'meteor': '☄️',
+        'frost_nova': '💠',
+        'flame_wave': '🌊',
+        'heal': '💖',
+        'shield_aura': '🔮',
+        'regeneration': '💚',
+        'magic_barrier': '🛡️',
+        'vampire': '🧛',
+        'apocalypse': '💀',
+        'thunder_storm': '⛈️',
+        'inferno': '🔥'
+    };
+    return icons[skillId] || '✨';
+}
+
+function showSkillTooltip(e, skillConfig) {
+    const tooltip = document.getElementById('skillTooltip');
+    if (!tooltip) return;
+
+    const effectText = getSkillEffectText(skillConfig);
+
+    tooltip.querySelector('.tooltip-title').textContent = skillConfig.name;
+    tooltip.querySelector('.tooltip-desc').textContent = skillConfig.description;
+    tooltip.querySelector('.tooltip-effect').textContent = effectText;
+
+    tooltip.classList.add('visible');
+    moveSkillTooltip(e);
+}
+
+function moveSkillTooltip(e) {
+    const tooltip = document.getElementById('skillTooltip');
+    if (!tooltip) return;
+
+    const x = e.clientX + 15;
+    const y = e.clientY + 15;
+
+    const rect = tooltip.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width - 10;
+    const maxY = window.innerHeight - rect.height - 10;
+
+    tooltip.style.left = Math.min(x, maxX) + 'px';
+    tooltip.style.top = Math.min(y, maxY) + 'px';
+}
+
+function hideSkillTooltip() {
+    const tooltip = document.getElementById('skillTooltip');
+    if (tooltip) tooltip.classList.remove('visible');
+}
+
+function getSkillEffectText(skillConfig) {
+    if (!skillConfig || !skillConfig.effect) return '';
+
+    const effect = skillConfig.effect;
+    const effectTexts = {
+        'damage_boost': `伤害 +${(effect.value * 100).toFixed(0)}%`,
+        'attack_speed': `攻速 +${(effect.value * 100).toFixed(0)}%`,
+        'crit_rate': `暴击率 +${(effect.value * 100).toFixed(0)}%`,
+        'defense': `防御力 +${(effect.value * 100).toFixed(0)}%`,
+        'lifesteal': `吸血 +${(effect.value * 100).toFixed(0)}%`,
+        'shield': `护盾 +${(effect.value * 100).toFixed(0)}%`
+    };
+
+    return effectTexts[effect.type] || `${effect.type}: +${effect.value}`;
+}
+
+function hideUpgradeOptions() {
+    const modal = document.getElementById('upgradeModal');
+    if (modal) modal.classList.add('hidden');
+    hideSkillTooltip();
+    upgradeOptions = [];
+    selectedUpgradeOption = -1;
+}
+
+function selectUpgradeOption(idx) {
+    selectedUpgradeOption = idx;
+
+    const options = document.querySelectorAll('.skill-item');
+    options.forEach((opt, i) => {
+        if (i === idx) opt.classList.add('selected');
+        else opt.classList.remove('selected');
+    });
+
+    document.getElementById('confirmUpgradeBtn').disabled = false;
+}
+
+function confirmUpgrade() {
+    if (selectedSkillSlotIndex < 0 || selectedUpgradeOption < 0) return;
+
+    const slot = gameInstance.skillManager.slots[selectedSkillSlotIndex];
+    const skillId = upgradeOptions[selectedUpgradeOption];
+    const skill = createSkill(skillId);
+
+    if (!skill) {
+        showMessage('技能创建失败');
+        return;
+    }
+
+    slot.setSkill(skill);
+    delete pendingSkillOptions[selectedSkillSlotIndex];
+    gameInstance.skillManager.recalculateBonus();
+
+    // TODO: 多人游戏架构 - 需要根据当前玩家过滤，只应用技能到属于当前玩家的塔
+    // 方案：gameInstance.entityManager.getEntitiesByType('tower').filter(t => t.owner === currentPlayerId).forEach(...)
+    gameInstance.entityManager.getEntitiesByType('tower').forEach(t => t.applySkill(gameInstance));
+
+    hideUpgradeOptions();
+    renderSkillSlots();
+    updateGoldDisplay();
+    updateButtonsState();
+}
+
+function handleReroll() {
+    if (!gameInstance || selectedSkillSlotIndex < 0) return;
+
+    const slot = gameInstance.skillManager.slots[selectedSkillSlotIndex];
+    const currentLevel = slot.level;
+
+    if (currentLevel === 0) {
+        showMessage('该槽位没有技能');
+        return;
+    }
+
+    const cost = getRerollCost(currentLevel);
+    if (!gameInstance.gold.spend(cost)) {
+        showMessage(`需要 ${cost} 金币`);
+        return;
+    }
+
+    const newSkillId = getRandomSkillFromPool(currentLevel);
+    if (newSkillId) {
+        const newSkill = createSkill(newSkillId);
+        if (newSkill) {
+            slot.setSkill(newSkill);
+            gameInstance.skillManager.recalculateBonus();
+        }
+    }
+
+    renderSkillSlots();
+    updateGoldDisplay();
+    updateButtonsState();
+}
+
+function showMessage(text) {
+    const msgBox = document.getElementById('messageBox');
+    if (!msgBox) return;
+
+    msgBox.textContent = text;
+    msgBox.classList.remove('hidden');
+
+    msgBox.style.animation = 'none';
+    msgBox.offsetHeight;
+    msgBox.style.animation = 'fadeInOut 2s forwards';
+
+    setTimeout(() => {
+        msgBox.classList.add('hidden');
+    }, 2000);
+}
+
+function updateGoldDisplay() {
+    if (!gameInstance) return;
+    const goldEl = document.getElementById('goldAmount');
+    if (goldEl) {
+        goldEl.textContent = gameInstance.gold.getAmount();
+    }
+}
+
+function updateButtonsState() {
+    if (!gameInstance || selectedSkillSlotIndex < 0) return;
+
+    const slot = gameInstance.skillManager.slots[selectedSkillSlotIndex];
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const rerollBtn = document.getElementById('rerollBtn');
+
+    upgradeBtn.disabled = slot.level >= 5;
+    rerollBtn.disabled = slot.level === 0;
+}
+
+function setupUIEvents() {
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const rerollBtn = document.getElementById('rerollBtn');
+    const confirmUpgradeBtn = document.getElementById('confirmUpgradeBtn');
+    const cancelUpgradeBtn = document.getElementById('cancelUpgradeBtn');
+
+    if (upgradeBtn) {
+        upgradeBtn.addEventListener('click', () => {
+            const slot = gameInstance?.skillManager?.slots[selectedSkillSlotIndex];
+            if (slot && slot.level < 5) {
+                showUpgradeOptions();
+            }
+        });
+    }
+
+    if (rerollBtn) {
+        rerollBtn.addEventListener('click', handleReroll);
+    }
+
+    if (confirmUpgradeBtn) {
+        confirmUpgradeBtn.addEventListener('click', () => {
+            if (selectedUpgradeOption >= 0) {
+                confirmUpgrade();
+            }
+        });
+    }
+
+    if (cancelUpgradeBtn) {
+        cancelUpgradeBtn.addEventListener('click', () => {
+            const slot = gameInstance?.skillManager?.slots[selectedSkillSlotIndex];
+            const currentLevel = slot ? slot.level : 0;
+            const cost = getUpgradeCost(currentLevel);
+            if (currentLevel === 0 && cost === 0) {
+            } else if (currentLevel > 0) {
+                gameInstance.gold.earn(cost);
+                updateGoldDisplay();
+            }
+            hideUpgradeOptions();
+        });
+    }
+}
+
+function updateTowerInfoPanel(tower) {
+    const panel = document.getElementById('towerInfoPanel');
+    if (!panel) return;
+
+    if (tower) {
+        panel.classList.remove('hidden');
+        document.getElementById('towerTypeName').textContent = tower.towerTypeId || '默认';
+        document.getElementById('towerDamage').textContent = tower.damage || '-';
+        document.getElementById('towerAttackSpeed').textContent = tower.attackSpeed ? (1 / tower.attackCooldown).toFixed(1) + '/秒' : '-';
+        document.getElementById('towerRange').textContent = tower.range || '-';
+    } else {
+        panel.classList.add('hidden');
+    }
+}
 
 function showTowerSelection() {
     const selectionDiv = document.getElementById('towerSelection');
@@ -180,6 +627,34 @@ function startGame(towerTypeId, gridX, gridY) {
     gameInstance = new Game(canvas, ctx, towerTypeId, gridX, gridY);
     window.gameInstance = gameInstance;
     gameInstance.start();
+    initGameUI();
+    setupGameClickHandler();
+}
+
+function setupGameClickHandler() {
+    canvas.addEventListener('click', (e) => {
+        if (!gameInstance) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const towers = gameInstance.entityManager.getEntitiesByType('tower');
+        let clickedTower = null;
+
+        for (const tower of towers) {
+            const dx = tower.x - x;
+            const dy = tower.y - y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist <= 20) {
+                clickedTower = tower;
+                break;
+            }
+        }
+
+        gameInstance.selectedTower = clickedTower;
+        updateTowerInfoPanel(clickedTower);
+    });
 }
 
 class Game {
@@ -202,8 +677,10 @@ class Game {
         this.spawnInterval = 0.5;
         this.enemiesPerSpawn = 3;
         this.skillManager = new SkillManager();
-        this.skillManager.initWithRandomSkills();
+        this.gold = new Gold(INITIAL_GOLD);
         this.projectiles = new ProjectileManager();
+        this.selectedTower = null;
+        this.selectedSkillSlotIndex = -1;
 
         if (initialTowerType && initialGridX !== null && initialGridY !== null) {
             this.spawnInitialTower(initialTowerType, initialGridX, initialGridY);
@@ -224,10 +701,10 @@ class Game {
         return this.spawnTowerAt(centerPos.x / TILE_SIZE, centerPos.y / TILE_SIZE, false);
     }
 
-    spawnTowerAt(gridX, gridY, applySkills = true) {
+    spawnTowerAt(gridX, gridY, applySkills = true, owner = 'player') {
         const worldX = gridX * TILE_SIZE + TILE_SIZE / 2;
         const worldY = gridY * TILE_SIZE + TILE_SIZE / 2;
-        const tower = new Tower(worldX, worldY);
+        const tower = new Tower(worldX, worldY, owner);
         
         if (applySkills) {
             tower.applySkill(this);
@@ -262,7 +739,7 @@ class Game {
             case 3: x = Math.random() * canvas.width; y = canvas.height + 30; break;
         }
 
-        const enemy = new Enemy(x, y);
+        const enemy = new Enemy(x, y, 'enemy');
         enemy.speed = 30 + Math.random() * 20;
         this.entityManager.addEntity(enemy);
     }
@@ -271,10 +748,10 @@ class Game {
         return getAvailableDirections(this.occupiedDirections);
     }
 
-    spawnTower(gridX, gridY, applySkills = true) {
+    spawnTower(gridX, gridY, applySkills = true, owner = 'player') {
         const worldX = gridX * TILE_SIZE + TILE_SIZE / 2;
         const worldY = gridY * TILE_SIZE + TILE_SIZE / 2;
-        const tower = new Tower(worldX, worldY);
+        const tower = new Tower(worldX, worldY, owner);
         
         if (applySkills) {
             tower.applySkill(this);

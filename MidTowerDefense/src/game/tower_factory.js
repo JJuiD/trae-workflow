@@ -3,7 +3,7 @@ import { getTowerType } from './tower_types.js';
 import { createSkill } from './skill.js';
 
 class TowerFactory {
-    static create(towerTypeId, x, y, game = null) {
+    static create(towerTypeId, x, y, game = null, owner = 'player') {
         const typeConfig = getTowerType(towerTypeId);
         
         if (!typeConfig) {
@@ -11,7 +11,7 @@ class TowerFactory {
             return null;
         }
 
-        const tower = new Tower(x, y);
+        const tower = new Tower(x, y, owner);
         
         tower.damage = typeConfig.damage;
         tower.attackCooldown = typeConfig.attackCooldown;
