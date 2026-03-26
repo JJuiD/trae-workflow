@@ -319,6 +319,120 @@ const SKILL_CONFIGS = {
             range: 500
         }
     },
+    'sharp_arrow': {
+        id: 'sharp_arrow',
+        name: '锐利箭矢',
+        description: '提升暴击率',
+        category: 'passive',
+        level: 1,
+        effect: { type: 'crit_rate', value: 0.1 }
+    },
+    'iron_will': {
+        id: 'iron_will',
+        name: '钢铁意志',
+        description: '提升防御力',
+        category: 'passive',
+        level: 1,
+        effect: { type: 'defense', value: 0.15 }
+    },
+    'poison_dart': {
+        id: 'poison_dart',
+        name: '毒镖',
+        description: '每隔3秒发射毒镖',
+        category: 'timed',
+        level: 2,
+        effect: {
+            type: 'fireball',
+            interval: 3,
+            damage: 25,
+            speed: 180
+        }
+    },
+    'lightning_bolt': {
+        id: 'lightning_bolt',
+        name: '闪电箭',
+        description: '每隔2秒发射闪电箭',
+        category: 'timed',
+        level: 2,
+        effect: {
+            type: 'fireball',
+            interval: 2,
+            damage: 35,
+            speed: 300
+        }
+    },
+    'frost_nova': {
+        id: 'frost_nova',
+        name: '冰霜新星',
+        description: '每隔4秒释放冰霜新星',
+        category: 'timed',
+        level: 3,
+        effect: {
+            type: 'lightning_strike',
+            interval: 4,
+            damage: 45,
+            range: 120
+        }
+    },
+    'flame_wave': {
+        id: 'flame_wave',
+        name: '火焰波',
+        description: '每隔3秒释放火焰波',
+        category: 'timed',
+        level: 3,
+        effect: {
+            type: 'lightning_strike',
+            interval: 3,
+            damage: 55,
+            range: 90
+        }
+    },
+    'regeneration': {
+        id: 'regeneration',
+        name: '再生',
+        description: '持续恢复生命值',
+        category: 'passive',
+        level: 4,
+        effect: { type: 'heal', value: 5, interval: 1 }
+    },
+    'magic_barrier': {
+        id: 'magic_barrier',
+        name: '魔法护盾',
+        description: '受到伤害时生成魔法护盾',
+        category: 'trigger',
+        level: 4,
+        effect: {
+            type: 'shield_on_hit',
+            cooldown: 8,
+            shieldValue: 80
+        }
+    },
+    'thunder_storm': {
+        id: 'thunder_storm',
+        name: '雷霆风暴',
+        description: '每隔6秒召唤雷霆',
+        category: 'timed',
+        level: 5,
+        effect: {
+            type: 'lightning_strike',
+            interval: 6,
+            damage: 120,
+            range: 150
+        }
+    },
+    'inferno': {
+        id: 'inferno',
+        name: '地狱火',
+        description: '每隔4秒释放地狱火',
+        category: 'timed',
+        level: 5,
+        effect: {
+            type: 'lightning_strike',
+            interval: 4,
+            damage: 100,
+            range: 100
+        }
+    },
 };
 
 function createSkill(configId) {

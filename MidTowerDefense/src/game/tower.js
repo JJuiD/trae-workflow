@@ -2,8 +2,8 @@ import { Entity } from './entity.js';
 import { createSkill } from './skill.js';
 
 class Tower extends Entity {
-    constructor(x, y) {
-        super(x, y, 'tower');
+    constructor(x, y, owner = null) {
+        super(x, y, 'tower', owner);
 
         this._range = 150;
         this.target = null;
@@ -42,6 +42,7 @@ class Tower extends Entity {
     }
 
     applySkill(game) {
+        // TODO: 多人游戏架构 - skillManager 应为当前玩家专属，或在此根据 this.owner 过滤技能
         if (game && game.skillManager) {
             game.skillManager.applyAllSkills(game, this);
         }

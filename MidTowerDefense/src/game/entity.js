@@ -5,11 +5,12 @@ function generateEntityId() {
 }
 
 class Entity {
-    constructor(x, y, type) {
+    constructor(x, y, type, owner = null) {
         this.id = generateEntityId();
         this.type = type;
         this.x = x;
         this.y = y;
+        this.owner = owner;
         this.collisionRadius = 15;
         this.hasCollision = true;
 

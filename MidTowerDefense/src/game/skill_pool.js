@@ -1,9 +1,9 @@
 const SKILL_POOLS = {
-    1: ['power_strike', 'quick_shot'],
-    2: ['fireball', 'ice_arrow'],
-    3: ['chain_lightning', 'meteor'],
-    4: ['heal', 'shield_aura'],
-    5: ['vampire', 'apocalypse'],
+    1: ['power_strike', 'quick_shot', 'sharp_arrow', 'iron_will'],
+    2: ['fireball', 'ice_arrow', 'poison_dart', 'lightning_bolt'],
+    3: ['chain_lightning', 'meteor', 'frost_nova', 'flame_wave'],
+    4: ['heal', 'shield_aura', 'regeneration', 'magic_barrier'],
+    5: ['vampire', 'apocalypse', 'thunder_storm', 'inferno'],
 };
 
 const SET_BONUSES = {

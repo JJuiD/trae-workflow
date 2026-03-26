@@ -188,11 +188,405 @@
         #positionSelection.hidden {
             display: none;
         }
+        #gameContainer {
+            display: flex;
+            flex-direction: row;
+        }
+        #rightPanel {
+            width: 200px;
+            height: 600px;
+            background: #1a1a2e;
+            border-left: 2px solid #4a4a6a;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 10px;
+        }
+        .panel {
+            background: #2a2a4a;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .panel.hidden {
+            display: none;
+        }
+        .panel-title {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .tower-info-content {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .skill-slots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            min-height: 180px;
+        }
+        .skill-slot {
+            width: 50px;
+            height: 50px;
+            background: #1a1a3a;
+            border: 2px solid #4a4a6a;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .skill-slot:hover {
+            border-color: #4a90d9;
+        }
+        .skill-slot.selected {
+            border-color: #4ade80;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+        }
+        .skill-slot.empty {
+            opacity: 0.5;
+        }
+        .skill-slot.timed {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #2a1a1a 0%, #1a1a3a 100%);
+        }
+        .skill-slot.timed::after {
+            content: '●';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 6px;
+            color: #ff6b6b;
+        }
+        .skill-slot.trigger {
+            border-color: #9b59b6;
+            background: linear-gradient(135deg, #2a1a2a 0%, #1a1a3a 100%);
+        }
+        .skill-slot.trigger::after {
+            content: '◆';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 6px;
+            color: #9b59b6;
+        }
+        .skill-slot.cooling {
+            animation: cooling-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes cooling-pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .skill-slot-tooltip {
+            position: fixed;
+            background: #1a1a2e;
+            border: 1px solid #4a4a6a;
+            border-radius: 6px;
+            padding: 10px;
+            min-width: 140px;
+            z-index: 300;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .skill-slot-tooltip.visible {
+            opacity: 1;
+        }
+        .tooltip-skill-name {
+            color: #fff;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .tooltip-skill-category {
+            color: #9a9aaa;
+            font-size: 10px;
+            margin-bottom: 6px;
+        }
+        .tooltip-skill-desc {
+            color: #8a8a9a;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+        .tooltip-skill-effect {
+            color: #4ade80;
+            font-size: 11px;
+        }
+        .skill-level {
+            color: #fff;
+            font-size: 8px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 45px;
+        }
+        .skill-level {
+            color: #fbbf24;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .panel-buttons {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 8px 5px;
+            background: #4a90d9;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .action-btn:hover:not(:disabled) {
+            background: #3a7bc8;
+        }
+        .action-btn:disabled {
+            background: #4a4a6a;
+            cursor: not-allowed;
+        }
+        #goldDisplay {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+        .gold-label {
+            color: #fbbf24;
+            font-size: 14px;
+        }
+        #goldAmount {
+            color: #fbbf24;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .message-box {
+            position: absolute;
+            top: 10px;
+            right: 220px;
+            background: rgba(239, 68, 68, 0.9);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 100;
+            animation: fadeInOut 2s forwards;
+        }
+        .message-box.hidden {
+            display: none;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        .modal.hidden {
+            display: none;
+        }
+        .skill-upgrade-modal {
+            background: #1a1a2e;
+            border: 2px solid #4a4a6a;
+            border-radius: 8px;
+            padding: 20px;
+            min-width: 480px;
+        }
+        .modal-title {
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .skill-upgrade-container {
+            background: #12121f;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .skill-upgrade-options {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 12px;
+        }
+        .skill-item {
+            background: #1a1a3a;
+            border: 2px solid #3a3a5a;
+            border-radius: 6px;
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 70px;
+            max-width: 80px;
+            text-align: center;
+        }
+        .skill-item:hover {
+            border-color: #6a6a9a;
+        }
+        .skill-item.selected {
+            border-color: #00ff88;
+            background: #1a2a3a;
+        }
+        .skill-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .skill-icon {
+            font-size: 28px;
+            margin: 0 auto 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .skill-name {
+            color: #fff;
+            font-size: 11px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .skill-item.disabled .skill-name {
+            color: #666;
+        }
+        .skill-upgrade-info {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        .skill-upgrade-cost {
+            color: #9a9aaa;
+            font-size: 12px;
+        }
+        .skill-tooltip {
+            position: fixed;
+            background: #1a1a2e;
+            border: 1px solid #4a4a6a;
+            border-radius: 4px;
+            padding: 10px;
+            min-width: 160px;
+            z-index: 300;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .skill-tooltip.visible {
+            opacity: 1;
+        }
+        .tooltip-title {
+            color: #fff;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .tooltip-desc {
+            color: #8a8a9a;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+        .tooltip-effect {
+            color: #00ff88;
+            font-size: 11px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .modal-buttons .action-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 13px;
+            border-radius: 4px;
+            background: #2a2a4a;
+            border: 1px solid #4a4a6a;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-buttons .action-btn:hover:not(:disabled) {
+            background: #3a3a5a;
+        }
+        .modal-buttons .action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .modal-buttons #confirmUpgradeBtn:not(:disabled) {
+            background: #00cc6a;
+            border-color: #00ff88;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="rightPanel">
+            <div id="towerInfoPanel" class="panel hidden">
+                <h3 class="panel-title">塔信息</h3>
+                <div class="tower-info-content">
+                    <div class="info-row"><span>类型:</span><span id="towerTypeName">-</span></div>
+                    <div class="info-row"><span>伤害:</span><span id="towerDamage">-</span></div>
+                    <div class="info-row"><span>攻速:</span><span id="towerAttackSpeed">-</span></div>
+                    <div class="info-row"><span>范围:</span><span id="towerRange">-</span></div>
+                </div>
+            </div>
+            <div id="skillPanel" class="panel">
+                <h3 class="panel-title">技能</h3>
+                <div class="skill-slots" id="skillSlots"></div>
+                <div class="panel-buttons">
+                    <button class="action-btn" id="upgradeBtn" disabled>升级</button>
+                    <button class="action-btn" id="rerollBtn" disabled>重roll</button>
+                </div>
+            </div>
+            <div id="goldDisplay" class="panel">
+                <span class="gold-label">金币:</span>
+                <span id="goldAmount">100</span>
+            </div>
+            <div id="messageBox" class="message-box hidden"></div>
+        </div>
+        <div id="upgradeModal" class="modal hidden">
+            <div class="modal-content skill-upgrade-modal">
+                <h3 class="modal-title">选择技能</h3>
+                <div class="skill-upgrade-container">
+                    <div class="skill-upgrade-options" id="upgradeOptions"></div>
+                </div>
+                <div class="skill-upgrade-info">
+                    <div class="skill-upgrade-cost" id="upgradeCostDisplay">
+                        消耗: <span id="currentUpgradeCost">0</span> 金
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="action-btn" id="confirmUpgradeBtn" disabled>确认</button>
+                    <button class="action-btn" id="cancelUpgradeBtn">取消</button>
+                </div>
+            </div>
+            <div class="skill-tooltip" id="skillTooltip">
+                <div class="tooltip-title"></div>
+                <div class="tooltip-desc"></div>
+                <div class="tooltip-effect"></div>
+            </div>
+        </div>
         <div id="towerSelection">
             <h1 class="selection-title">选择你的初始塔</h1>
             <div class="tower-cards" id="towerCards"></div>
