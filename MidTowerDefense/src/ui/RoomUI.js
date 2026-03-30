@@ -1,4 +1,4 @@
-import { RoomManager, MAX_PLAYERS, SEAT_COLORS } from '../network/RoomManager.js';
+import { RoomManager, MAX_PLAYERS, SEAT_COLORS, ROOM_STATES } from '../network/RoomManager.js';
 import { getAllTowerTypes } from '../game/tower_types.js';
 import { createLogger } from '../utils/logger.js';
 
@@ -38,6 +38,7 @@ class RoomUI {
         this.roomManager.onReadyChanged = (data) => this.handleReadyChanged(data);
         this.roomManager.onConnectionFailed = (reason) => this.handleConnectionFailed(reason);
         this.roomManager.onRoomClosed = () => this.handleRoomClosed();
+        this.roomManager.onRoomStateChanged = (state) => this.handleRoomStateChanged(state);
         this.showMenu();
     }
 
@@ -141,12 +142,22 @@ class RoomUI {
     }
 
     createRoom(name) {
+        console.time('createRoom');
+        LOG.info('[TIMER] createRoom called, name=', name);
         this.playerName = name;
+        LOG.info('[TIMER] calling roomManager.init...');
         this.roomManager.init(name, (success, result) => {
+            console.timeLog('createRoom', 'init done');
+            LOG.info('[TIMER] init callback, success=', success, 'result=', result);
             if (success) {
+                LOG.info('[TIMER] calling createRoom...');
                 this.roomManager.createRoom((roomCreated, roomId) => {
+                    console.timeLog('createRoom', 'createRoom done');
+                    LOG.info('[TIMER] createRoom callback, roomCreated=', roomCreated, 'roomId=', roomId);
                     if (roomCreated) {
+                        console.timeLog('createRoom', 'showRoom start');
                         this.showRoom();
+                        console.timeEnd('createRoom');
                     }
                 });
             }
@@ -178,17 +189,29 @@ class RoomUI {
     }
 
     showRoom() {
+        LOG.info('DEBUG showRoom: start');
         this.currentView = 'room';
         this.pendingSwapSeat = null;
         this.showingTowerList = false;
         this.selectedTowerInfo = null;
 
+        const existingSwapModal = document.getElementById('swap-modal');
+        LOG.info('DEBUG showRoom: existingSwapModal=', existingSwapModal);
+        if (existingSwapModal) {
+            LOG.info('DEBUG showRoom: adding hidden class');
+            existingSwapModal.classList.add('hidden');
+        } else {
+            LOG.info('DEBUG showRoom: modal not found in DOM');
+        }
+
+        LOG.info('DEBUG showRoom: setting innerHTML');
         this.container.innerHTML = `
             <div class="room-view">
                 <div class="room-header">
                     <div class="room-info">
                         <span>房间ID: <strong id="room-id"></strong></span>
                         <button id="btn-copy-room-id" class="btn-copy">复制</button>
+                        <span id="room-state" class="room-state waiting">等待中</span>
                     </div>
                     <div class="room-actions">
                         ${this.roomManager.isHost ? '<button id="btn-start-game" class="btn-start">开始游戏</button>' : ''}
@@ -219,7 +242,7 @@ class RoomUI {
                     <button id="btn-close-tower-select" class="btn-close">关闭</button>
                 </div>
             </div>
-            <div id="swap-modal" class="modal hidden" style="display: none !important;">
+            <div id="swap-modal" class="modal hidden" style="display: none;">
                 <div class="modal-content">
                     <p id="swap-message"></p>
                     <div class="modal-buttons">
@@ -230,6 +253,25 @@ class RoomUI {
             </div>
         `;
         this.bindRoomEvents();
+
+        if (!this.roomManager.selectedTower) {
+            LOG.info('DEBUG: No tower selected, auto-selecting first tower');
+            const towers = getAllTowerTypes();
+            if (towers.length > 0) {
+                LOG.info('DEBUG: Auto-selecting tower:', towers[0].id);
+                this.roomManager.selectTower(towers[0].id);
+                this.selectedTowerInfo = towers[0];
+                this.showTowerInfo(towers[0]);
+            }
+        } else {
+            LOG.info('DEBUG: Tower already selected:', this.roomManager.selectedTower);
+            const tower = getAllTowerTypes().find(t => t.id === this.roomManager.selectedTower);
+            if (tower) {
+                this.selectedTowerInfo = tower;
+                this.showTowerInfo(tower);
+            }
+        }
+
         this.updateRoomUI();
     }
 
@@ -376,6 +418,7 @@ class RoomUI {
 
     updateTowerButton() {
         const btnToggle = document.getElementById('btn-toggle-towers');
+        LOG.info('DEBUG updateTowerButton: btnToggle=', btnToggle ? 'found' : 'null', 'selectedTower=', this.roomManager.selectedTower);
         const selectedTower = this.roomManager.selectedTower;
         if (btnToggle && selectedTower) {
             const tower = getAllTowerTypes().find(t => t.id === selectedTower);
@@ -443,7 +486,11 @@ class RoomUI {
     }
 
     handleSeatSwapRequest(fromPlayer, toSeat) {
+        LOG.info('DEBUG handleSeatSwapRequest: CALLED! fromPlayer=', fromPlayer, 'toSeat=', toSeat);
         LOG.debug('handleSeatSwapRequest called:', { fromPlayer, toSeat, currentView: this.currentView });
+        LOG.info('DEBUG: fromPlayer details:', JSON.stringify(fromPlayer));
+        LOG.info('DEBUG: my peerId:', this.roomManager.peer?.id);
+        LOG.info('DEBUG: my seat:', this.roomManager.seatNumber);
         if (this.currentView !== 'room') {
             LOG.debug('Ignoring: not in room view');
             return;
@@ -456,6 +503,10 @@ class RoomUI {
             LOG.debug('Ignoring: no player name');
             return;
         }
+        if (fromPlayer.peerId === this.roomManager.peer?.id) {
+            LOG.info('DEBUG: ignoring own swap request');
+            return;
+        }
 
         const modal = document.getElementById('swap-modal');
         const message = document.getElementById('swap-message');
@@ -465,9 +516,13 @@ class RoomUI {
         }
 
         this.pendingSwapSeat = toSeat;
+        LOG.info('DEBUG: Showing swap modal now!');
         LOG.debug('Showing modal with:', `${fromPlayer.name} 想和你交换座位 (座位 ${toSeat})`);
         message.textContent = `${fromPlayer.name} 想和你交换座位 (座位 ${toSeat})`;
+        LOG.info('DEBUG: About to remove hidden class');
         modal.classList.remove('hidden');
+        modal.style.display = '';
+        LOG.info('DEBUG: Hidden class removed');
     }
 
     acceptSwap() {
@@ -484,6 +539,7 @@ class RoomUI {
         const modal = document.getElementById('swap-modal');
         if (modal) {
             modal.classList.add('hidden');
+            modal.style.display = 'none';
         }
         this.pendingSwapSeat = null;
     }
@@ -536,8 +592,24 @@ class RoomUI {
             alert('需要至少1名玩家');
             return;
         }
+        this.roomManager.setRoomState('playing');
         if (this.onGameStart) {
             this.onGameStart(players, this.roomManager.roomId);
+        }
+    }
+
+    handleRoomStateChanged(state) {
+        LOG.info('RoomUI received room state change:', state);
+        if (state === 'playing' && this.currentView === 'room') {
+            this.updateRoomStateUI(state);
+        }
+    }
+
+    updateRoomStateUI(state) {
+        const stateIndicator = document.getElementById('room-state');
+        if (stateIndicator) {
+            stateIndicator.textContent = state === 'waiting' ? '等待中' : '游戏中';
+            stateIndicator.className = 'room-state ' + state;
         }
     }
 }
