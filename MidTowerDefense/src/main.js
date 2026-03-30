@@ -11,6 +11,8 @@ import { getTowerType, getAllTowerTypes } from './game/tower_types.js';
 import { Gold, INITIAL_GOLD, getUpgradeCost, getRerollCost } from './game/gold.js';
 import { getSkillPool, getRandomSkillFromPool } from './game/skill_pool.js';
 import { createSkill, getSkillById } from './game/skill.js';
+import { Effects } from './game/Effects.js';
+import { RoomUI } from './ui/RoomUI.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -510,7 +512,7 @@ function showTowerSelection() {
     startBtn.addEventListener('click', () => {
         if (selectedTowerType) {
             selectionDiv.classList.add('hidden');
-            showPositionSelection();
+            showRoomUI();
         }
     });
 
@@ -518,6 +520,38 @@ function showTowerSelection() {
         positionDiv.classList.add('hidden');
         selectionDiv.classList.remove('hidden');
     });
+}
+
+function showRoomUI() {
+    const roomContainer = document.createElement('div');
+    roomContainer.id = 'roomContainer';
+    document.body.appendChild(roomContainer);
+
+    const roomUI = new RoomUI(roomContainer, (players, roomId) => {
+        console.log('[Main] onGameStart callback, players:', players);
+        document.body.removeChild(roomContainer);
+        startMultiplayerGame(players);
+    });
+}
+
+function startMultiplayerGame(players) {
+    console.log('[Main] startMultiplayerGame called, players:', players);
+    if (!players || players.length === 0) {
+        console.log('[Main] No players, showing tower selection');
+        showTowerSelection();
+        return;
+    }
+    const player = players[0];
+    console.log('[Main] Player data:', player);
+    const towerTypeId = player.tower || 'archer';
+    const seatNumber = player.seat || 1;
+    const gridPositions = getAllPlayerGridPositions();
+    const pos = gridPositions[(seatNumber - 1) % gridPositions.length];
+    console.log('[Main] Starting game with tower:', towerTypeId, 'position:', pos);
+
+    tempMap = new Map(DEFAULT_MAP_SIZE);
+    tempRenderer = new MapRenderer(ctx, TILE_SIZE);
+    startGame(towerTypeId, pos.gridX, pos.gridY);
 }
 
 function showPositionSelection() {
@@ -624,6 +658,11 @@ function showPositionSelection() {
 }
 
 function startGame(towerTypeId, gridX, gridY) {
+    console.log('[Main] startGame called with tower:', towerTypeId, 'x:', gridX, 'y:', gridY);
+    const towerSelection = document.getElementById('towerSelection');
+    const positionSelection = document.getElementById('positionSelection');
+    if (towerSelection) towerSelection.classList.add('hidden');
+    if (positionSelection) positionSelection.classList.add('hidden');
     gameInstance = new Game(canvas, ctx, towerTypeId, gridX, gridY);
     window.gameInstance = gameInstance;
     gameInstance.start();
@@ -768,6 +807,7 @@ class Game {
         this.mapRenderer.renderMap(this.map, this.crystal, this.occupiedDirections);
         this.entityManager.render(this.ctx);
         this.projectiles.render(this.ctx);
+        Effects.render(this.ctx);
     }
 
     gameLoop(currentTime) {
@@ -776,6 +816,7 @@ class Game {
 
         this.update(deltaTime);
         this.render();
+        Effects.update(deltaTime / 1000);
 
         requestAnimationFrame((time) => this.gameLoop(time));
     }
@@ -802,5 +843,5 @@ class Game {
 }
 
 if (typeof window !== 'undefined') {
-    showTowerSelection();
+    showRoomUI();
 }

@@ -536,6 +536,391 @@
             border-color: #00ff88;
             color: #fff;
         }
+        #roomContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .room-menu, .room-form, .room-view {
+            background: #2a2a4a;
+            border: 2px solid #4a4a6a;
+            border-radius: 15px;
+            padding: 30px;
+            min-width: 400px;
+        }
+        .room-view {
+            min-width: 700px;
+        }
+        .room-menu h2, .room-form h2, .room-view h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #3a3a5a;
+        }
+        .room-content {
+            display: flex;
+            gap: 25px;
+        }
+        .players-column {
+            flex: 0 0 260px;
+        }
+        .tower-column {
+            flex: 1;
+        }
+        .menu-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .menu-buttons button, .form-buttons button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background: linear-gradient(145deg, #4a90d9, #3b82f6);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .menu-buttons button:hover, .form-buttons button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(74, 144, 217, 0.5);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            color: #9ca3af;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a2e;
+            border: 1px solid #4a4a6a;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+        .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4a4a6a;
+        }
+        .room-info {
+            color: #9ca3af;
+        }
+        .room-info strong {
+            color: #4ade80;
+        }
+        .btn-copy {
+            padding: 5px 10px;
+            background: #4a4a6a;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        .room-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .room-actions button {
+            padding: 8px 15px;
+            background: #4a4a6a;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        #btn-start-game {
+            background: linear-gradient(145deg, #4ade80, #22c55e) !important;
+        }
+        .players-column h3, .tower-column h3 {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tower-column {
+            flex: 1;
+        }
+        .player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .player-slot {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .player-slot:hover {
+            background: #222238;
+        }
+        .seat-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+        .seat-badge.empty {
+            opacity: 0.4;
+        }
+        .player-details {
+            flex: 1;
+        }
+        .player-name-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .host-badge {
+            font-size: 14px;
+        }
+        .player-name {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .player-name.empty-text {
+            color: #6b7280;
+            font-size: 13px;
+        }
+        .player-tower {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        .ready-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: #3a3a5a;
+            color: transparent;
+        }
+        .ready-indicator.ready {
+            background: #22c55e;
+            color: #fff;
+        }
+        .swap-hint {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .tower-selection {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .tower-icon-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid #3a3a5a;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .tower-icon-btn:hover {
+            border-color: #4a90d9;
+            transform: scale(1.1);
+        }
+        .tower-icon-btn.selected {
+            border-color: #4ade80;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.4);
+        }
+        .tower-initial {
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .btn-toggle-towers {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a4a;
+            border: 2px solid #3a3a5a;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+        .btn-toggle-towers:hover {
+            background: #3a3a5a;
+            border-color: #4a90d9;
+        }
+        .tower-info {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+        }
+        .tower-placeholder {
+            color: #6b7280;
+            text-align: center;
+            padding: 60px 20px;
+            font-size: 14px;
+        }
+        .tower-select-content {
+            max-width: 400px;
+            padding: 25px;
+        }
+        .tower-select-content h3 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .tower-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .btn-close {
+            width: 100%;
+            padding: 12px;
+            background: #3a3a5a;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-close:hover {
+            background: #4a4a6a;
+        }
+        .tower-info.hidden {
+            display: none;
+        }
+        .tower-detail-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            margin: 0 auto 15px;
+        }
+        .tower-detail-name {
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .tower-detail-stats {
+            background: #222238;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .tower-detail-stats div {
+            color: #9ca3af;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+        .tower-detail-desc {
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .ready-section {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #3a3a5a;
+        }
+        .btn-ready {
+            padding: 14px 50px;
+            font-size: 16px;
+            background: linear-gradient(145deg, #4a90d9, #3b82f6);
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-ready:hover {
+            transform: scale(1.05);
+        }
+        .btn-ready.is-ready {
+            background: linear-gradient(145deg, #4ade80, #22c55e);
+        }
+        #swap-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        #swap-modal .modal-content {
+            background: #2a2a4a;
+            border: 2px solid #4a4a6a;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+        #swap-modal p {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -599,6 +984,7 @@
             <button class="back-btn" id="backBtn">返回</button>
         </div>
     </div>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script type="module" src="src/main.js"></script>
 </body>
 </html>

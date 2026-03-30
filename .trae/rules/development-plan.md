@@ -4,12 +4,11 @@
 
 | 字段 | 值 |
 |------|-----|
-| 任务名称 | 第7周：技能系统完善（面板+升级+重roll） |
-| Git分支 | feature/week7_reroll_and_tower_attack |
+| 任务名称 | 第8周：房间管理基础 + 防御塔攻击特效 |
+| Git分支 | feature/week8_tower_and_room |
 | 状态 | 待合并 |
 | 开始时间 | 2026-03-26 |
-| 完成时间 | 2026-03-26 |
 
 ## 任务文档
 
-- `e:\project\trae-workflow\plans\2026-03-26_第7周_技能系统完善.md`
+- `e:\project\trae-workflow\plans\2026-03-26_第8周_房间管理基础.md`

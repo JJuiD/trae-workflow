@@ -1,5 +1,14 @@
 import { Entity } from './entity.js';
 import { createSkill } from './skill.js';
+import { Effects } from './Effects.js';
+
+const TOWER_SHAPES = {
+    archer: 'triangle',
+    mage: 'pentagon',
+    cannon: 'circle',
+    guardian: 'square',
+    support: 'hexagon'
+};
 
 class Tower extends Entity {
     constructor(x, y, owner = null) {
@@ -21,6 +30,7 @@ class Tower extends Entity {
         this.color = '#fbbf24';
         this.projectileColor = '#f59e0b';
         this.towerTypeId = 'default';
+        this.shape = 'square';
     }
 
     get range() {
@@ -42,7 +52,6 @@ class Tower extends Entity {
     }
 
     applySkill(game) {
-        // TODO: 多人游戏架构 - skillManager 应为当前玩家专属，或在此根据 this.owner 过滤技能
         if (game && game.skillManager) {
             game.skillManager.applyAllSkills(game, this);
         }
@@ -105,23 +114,105 @@ class Tower extends Entity {
         target.takeDamage(finalDamage);
         this.lastAttackTarget = target;
         this.attackFlashTimer = 0.15;
+        this.playAttackEffect(target);
+    }
+
+    playAttackEffect(target) {
+        switch (this.towerTypeId) {
+            case 'archer':
+                Effects.addArrowTrail(this.x, this.y, target.x, target.y, this.projectileColor);
+                break;
+            case 'mage':
+                Effects.addMageOrb(this.x, this.y, target.x, target.y, this.projectileColor);
+                break;
+            case 'cannon':
+                Effects.addCannonExplosion(target.x, target.y, this.projectileColor);
+                break;
+            case 'guardian':
+                Effects.addGuardianSlash(this.x, this.y, target.x, target.y, this.projectileColor);
+                break;
+            case 'support':
+                Effects.addSupportAura(target.x, target.y, this.projectileColor);
+                break;
+            default:
+                Effects.addArrowTrail(this.x, this.y, target.x, target.y, this.projectileColor);
+        }
+    }
+
+    getShape() {
+        return TOWER_SHAPES[this.towerTypeId] || 'square';
+    }
+
+    drawShapePath(ctx, shape, size) {
+        ctx.beginPath();
+        switch (shape) {
+            case 'triangle':
+                for (let i = 0; i < 3; i++) {
+                    const angle = (i / 3) * Math.PI * 2 - Math.PI / 2;
+                    const px = Math.cos(angle) * size;
+                    const py = Math.sin(angle) * size;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                break;
+            case 'pentagon':
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                    const px = Math.cos(angle) * size;
+                    const py = Math.sin(angle) * size;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                break;
+            case 'hexagon':
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    const px = Math.cos(angle) * size;
+                    const py = Math.sin(angle) * size;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                break;
+            case 'circle':
+                ctx.arc(0, 0, size, 0, Math.PI * 2);
+                break;
+            case 'square':
+            default:
+                ctx.rect(-size, -size, size * 2, size * 2);
+                break;
+        }
+        ctx.closePath();
     }
 
     render(ctx) {
         if (!this.isAlive) return;
+
+        const shape = this.getShape();
+        const size = 15;
+        let rotation = 0;
 
         if (this.isTakingDamage) {
             ctx.fillStyle = '#ffffff';
         } else {
             ctx.fillStyle = this.color || '#4a90d9';
         }
-        ctx.fillRect(this.x - 15, this.y - 15, 30, 30);
+
+        if (this.towerTypeId === 'archer' && this.lastAttackTarget) {
+            rotation = Math.atan2(this.lastAttackTarget.y - this.y, this.lastAttackTarget.x - this.x) + Math.PI / 2;
+        }
+
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(rotation);
+        this.drawShapePath(ctx, shape, size);
+        ctx.fill();
 
         if (!this.isTakingDamage) {
             ctx.strokeStyle = this.color ? this.darkenColor(this.color, 0.3) : '#2d5a87';
             ctx.lineWidth = 2;
-            ctx.strokeRect(this.x - 15, this.y - 15, 30, 30);
+            ctx.stroke();
         }
+        ctx.restore();
 
         if (this.attackFlashTimer > 0 && this.lastAttackTarget) {
             ctx.strokeStyle = '#ffff00';
