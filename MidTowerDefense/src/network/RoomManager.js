@@ -2,6 +2,8 @@ import { createLogger } from '../utils/logger.js';
 
 const PEER_CONFIG = {
     debug: 1,
+    host: 'localhost',
+    port: 9001,
     config: {
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
@@ -14,6 +16,7 @@ const MAX_PLAYERS = 4;
 const SEAT_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#eab308'];
 const SEAT_SWAP_COOLDOWN = 1000;
 const SEAT_SWAP_REQUEST_TIMEOUT = 10000;
+const ROOM_STATES = { WAITING: 'waiting', PLAYING: 'playing' };
 
 const LOG = createLogger('Room');
 
@@ -29,6 +32,7 @@ class RoomManager {
         this.seatNumber = 0;
         this.selectedTower = null;
         this.isReady = false;
+        this.roomState = ROOM_STATES.WAITING;
         this.seatSwapCooldown = 0;
         this.pendingSwapRequest = null;
         this.swapRequestTimeout = null;
@@ -40,11 +44,13 @@ class RoomManager {
         this.onReadyChanged = null;
         this.onConnectionFailed = null;
         this.onRoomClosed = null;
+        this.onRoomStateChanged = null;
     }
 
     init(playerName, callback) {
         this.playerName = playerName;
         const peerId = `${playerName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        LOG.info('DEBUG RoomManager.init: creating Peer with id=', peerId);
         this.peer = new Peer(peerId, PEER_CONFIG);
 
         this.peer.on('open', (id) => {
@@ -68,7 +74,7 @@ class RoomManager {
             return;
         }
 
-        this.roomId = this.generateRoomId();
+        this.roomId = this.peer.id;
         this.isHost = true;
         this.seatNumber = 1;
         this.selectedTower = 'archer';
@@ -162,6 +168,9 @@ class RoomManager {
             case 'ready_changed':
                 this.handleReadyChanged(data);
                 break;
+            case 'room_state_changed':
+                this.handleRoomStateChanged(data);
+                break;
             case 'player_left':
                 this.handlePlayerLeft(data);
                 break;
@@ -194,7 +203,8 @@ class RoomManager {
         this.sendMessage(conn, {
             type: 'join_approved',
             player: playerData,
-            players: Array.from(this.players.values())
+            players: Array.from(this.players.values()),
+            roomState: this.roomState
         });
 
         this.broadcast({
@@ -211,6 +221,9 @@ class RoomManager {
         this.seatNumber = data.player.seat;
         this.players.clear();
         data.players.forEach(p => this.players.set(p.peerId, p));
+        if (data.roomState) {
+            this.roomState = data.roomState;
+        }
         if (this.onPlayerJoined) {
             this.onPlayerJoined(data.player);
         }
@@ -226,12 +239,16 @@ class RoomManager {
     handlePlayerListUpdate(data) {
         this.players.clear();
         data.players.forEach(p => this.players.set(p.peerId, p));
+        if (this.onPlayerJoined) {
+            this.onPlayerJoined({ players: data.players });
+        }
     }
 
     handlePlayerDisconnect(peerId) {
         const player = this.players.get(peerId);
         if (!player) return;
 
+        const wasHost = player.isHost;
         this.players.delete(peerId);
         this.connections.delete(peerId);
 
@@ -239,6 +256,11 @@ class RoomManager {
 
         if (this.onPlayerLeft) {
             this.onPlayerLeft(player);
+        }
+
+        if (wasHost && !this.isHost) {
+            LOG.info('Host disconnected, closing room');
+            this.handleRoomClosed();
         }
     }
 
@@ -266,6 +288,9 @@ class RoomManager {
             LOG.debug('seat_swap_request ignored: fromPlayer not found');
             return;
         }
+
+        LOG.info('DEBUG handleSeatSwapRequest: fromPeerId=', data.fromPeerId, 'toSeat=', data.toSeat, 'fromPlayer=', JSON.stringify(fromPlayer));
+        LOG.info('DEBUG handleSeatSwapRequest: my peer.id=', this.peer.id, 'my seat=', this.seatNumber);
 
         LOG.debug('seat_swap_request accepted:', fromPlayer.name, '-> seat', data.toSeat);
 
@@ -327,14 +352,37 @@ class RoomManager {
         }
     }
 
+    handleRoomStateChanged(data) {
+        this.roomState = data.roomState;
+        LOG.info('Room state changed to:', this.roomState);
+        if (this.onRoomStateChanged) {
+            this.onRoomStateChanged(this.roomState);
+        }
+    }
+
+    setRoomState(state) {
+        if (!this.isHost) return;
+        this.roomState = state;
+        LOG.info('Setting room state to:', state);
+        this.broadcast({
+            type: 'room_state_changed',
+            roomState: state
+        });
+    }
+
     handlePlayerLeft(data) {
         const player = this.players.get(data.peerId);
+        const wasHost = player?.isHost;
         if (player) {
             this.players.delete(data.peerId);
             this.connections.delete(data.peerId);
             this.broadcast({ type: 'player_list_update', players: Array.from(this.players.values()) });
             if (this.onPlayerLeft) {
                 this.onPlayerLeft(player);
+            }
+            if (wasHost && !this.isHost) {
+                LOG.info('Host left, closing room');
+                this.handleRoomClosed();
             }
         }
     }
@@ -349,20 +397,46 @@ class RoomManager {
     requestSeatSwap(targetSeat) {
         if (this.seatSwapCooldown > 0 || !this.roomId) return false;
 
+        const myPlayer = this.players.get(this.peer.id);
+        if (!myPlayer) return false;
+
+        if (myPlayer.seat === targetSeat) {
+            LOG.info('DEBUG requestSeatSwap: same seat, ignore. mySeat=', myPlayer.seat, 'targetSeat=', targetSeat);
+            return false;
+        }
+
+        const targetPlayer = this.getPlayerBySeat(targetSeat);
+
+        LOG.info('DEBUG requestSeatSwap: myPeerId=', this.peer.id, 'mySeat=', myPlayer.seat, 'targetSeat=', targetSeat, 'targetPlayer=', JSON.stringify(targetPlayer));
+
+        if (!targetPlayer) {
+            LOG.info('DEBUG requestSeatSwap: empty seat, direct swap');
+            myPlayer.seat = targetSeat;
+            this.broadcast({
+                type: 'player_list_update',
+                players: Array.from(this.players.values())
+            }, this.connections.get(this.peer.id));
+            if (this.onSeatSwapConfirm) {
+                this.onSeatSwapConfirm({ players: Array.from(this.players.values()) });
+            }
+            this.seatSwapCooldown = SEAT_SWAP_COOLDOWN;
+            setTimeout(() => {
+                this.seatSwapCooldown = 0;
+            }, SEAT_SWAP_COOLDOWN);
+            return true;
+        }
+
         this.seatSwapCooldown = SEAT_SWAP_COOLDOWN;
         setTimeout(() => {
             this.seatSwapCooldown = 0;
         }, SEAT_SWAP_COOLDOWN);
-
-        const myPlayer = this.players.get(this.peer.id);
-        if (!myPlayer) return false;
 
         this.broadcast({
             type: 'seat_swap_request',
             fromPeerId: this.peer.id,
             fromSeat: myPlayer.seat,
             toSeat: targetSeat
-        }, null);
+        }, this.connections.get(this.peer.id));
 
         return true;
     }
@@ -412,6 +486,9 @@ class RoomManager {
             peerId: this.peer.id,
             tower: towerId
         });
+        if (this.onTowerSelected) {
+            this.onTowerSelected({ peerId: this.peer.id, tower: towerId });
+        }
     }
 
     setReady(isReady) {
@@ -490,6 +567,13 @@ class RoomManager {
         return Array.from(this.players.values());
     }
 
+    getPlayerBySeat(seat) {
+        for (const player of this.players.values()) {
+            if (player.seat === seat) return player;
+        }
+        return null;
+    }
+
     getSeatColor(seatNumber) {
         return SEAT_COLORS[(seatNumber - 1) % MAX_PLAYERS] || SEAT_COLORS[0];
     }
@@ -502,4 +586,4 @@ class RoomManager {
     }
 }
 
-export { RoomManager, MAX_PLAYERS, SEAT_COLORS };
+export { RoomManager, MAX_PLAYERS, SEAT_COLORS, ROOM_STATES };

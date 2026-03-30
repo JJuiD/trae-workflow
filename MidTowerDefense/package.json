@@ -5,6 +5,8 @@
   "main": "src/main.js",
   "scripts": {
     "dev": "npx serve .",
+    "peer": "node node_modules/peer/dist/bin/peerjs.js --port 9001",
+    "start": "npm run peer && npm run dev",
     "build": "echo 'No build step required for pure HTML5/JS game'"
   },
   "keywords": [
@@ -14,7 +16,10 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "peerjs": "^1.5.5"
+  },
+  "dependencies": {
+    "peer": "^1.0.2"
   }
 }
